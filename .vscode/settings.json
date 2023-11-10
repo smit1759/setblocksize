@@ -1,0 +1,6 @@
+{
+    "files.associations": {
+        "scsi.h": "c",
+        "unistd.h": "c"
+    }
+}
