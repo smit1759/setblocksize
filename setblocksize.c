@@ -497,7 +497,6 @@ command!\n");
    buf = timeout;
    /* new format unit logic */
    uint8_t cdb[IPR_CCB_CDB_LEN];
-   uint8_t cdb[IPR_CCB_CDB_LEN];
    struct sense_data_t sense_data;
    uint8_t *defect_list_hdr;
    int length = IPR_DEFECT_LIST_HDR_LEN;
