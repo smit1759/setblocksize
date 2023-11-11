@@ -419,7 +419,7 @@ command!\n");
    printf("\npara_list\n");
    print_buf(para_list, sizeof(para_list));
    printf("\nscsi_buf\n");
-   print_buf(scsi_buf, sizeof(scsi_buf));
+   print_buf(block_desc, sizeof(block_desc));
    fflush(stdout);
    // old: write(sg_fd, scsi_buf, mode_select_data_len)
    // sizeof(struct ipr_block_desc) + sizeof(struct ipr_mode_parm_hdr)
