@@ -503,10 +503,12 @@ command!\n");
    memset(cdb, 0, IPR_CCB_CDB_LEN);
 
    defect_list_hdr = calloc(1, IPR_DEFECT_LIST_HDR_LEN);
-   memcpy(scsi_buf + sizeof(struct sg_header), cdb, format_unit_data_len);
+
    cdb[0] = FORMAT_UNIT;
    cdb[1] = IPR_FORMAT_DATA; /* lun = 0, fmtdata = 1, cmplst = 0, defect list format = 0 */
-
+   defect_list_hdr[1] = 2;   /* FOV = 0, DPRY = 0, DCRT = 0, STPF = 0, IP = 0, DSP = 0, Immed = 1, VS = 0 */
+   memcpy(scsi_buf + sizeof(struct sg_header), cdb, sizeof(cdb));
+   memcpy(scsi_buf + sizeof(struct sg_header) + sizeof(cdb), defect_list_hdr, sizeof(defect_list_hdr));
    if (ioctl(sg_fd, SG_SET_TIMEOUT, &buf) < 0)
    {
       fprintf(stderr, "   Error!\n");
