@@ -150,7 +150,7 @@ int main(int argc, char **argv)
    block_desc->block_length[2] = BS & 0xff;
    /* end new logic*/
    int inquiry_data_len = sizeof(struct sg_header) + 0x06;
-   int mode_select_data_len = sizeof(struct sg_header) + 0x06 + 0x0C;
+   int mode_select_data_len = sizeof(struct sg_header) + 0x06 + sizeof(struct ipr_block_desc);
    int format_unit_data_len = sizeof(struct sg_header) + 0x06;
 
    /* Print info */
@@ -419,7 +419,9 @@ command!\n");
    // old: write(sg_fd, scsi_buf, mode_select_data_len)
    // sizeof(struct ipr_block_desc) + sizeof(struct ipr_mode_parm_hdr)
    int lengthOfPayload = (sizeof(struct sg_header) + sizeof(mode_select) + sizeof(block_desc));
-   if (write(sg_fd, scsi_buf, lengthOfPayload) < 0)
+   printf("Size of Payload: %x", lengthOfPayload);
+   printf("Size of hardcoded: %x", mode_select_data_len);
+   if (write(sg_fd, scsi_buf, mode_select_data_len) < 0)
    {
       fprintf(stderr, "   Write error\n\n");
       close(sg_fd);
