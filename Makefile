@@ -100,7 +100,7 @@ $(TARGET): $(TARGET).o sg_err.o
 $(TARGET).o: $(TARGET).c
 	@echo
 	@echo "Creating main object file ..."
-	$(C1) $(C1FLAGS) -c -o $(TARGET).o $(TARGET).c
+	$(C1) $(C1FLAGS) -c -o $(TARGET).o $(TARGET).c iprlib.c iprlib.h
 
 sg_err.o: sg_err.c
 	@echo
