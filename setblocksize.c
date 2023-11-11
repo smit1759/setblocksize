@@ -482,7 +482,7 @@ command!\n");
    print_buf(&io_hdr_t, sizeof(io_hdr_t));
    int rc = 0;
 
-   printf("New size: %x", newSize);
+   printf("New size: %x", sizeof(io_hdr_t));
    printf("Old size: %x", mode_select_data_len);
    /* end new cdb logic*/
 
