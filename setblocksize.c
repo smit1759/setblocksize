@@ -503,7 +503,7 @@ command!\n");
    memset(cdb, 0, IPR_CCB_CDB_LEN);
 
    defect_list_hdr = calloc(1, IPR_DEFECT_LIST_HDR_LEN);
-   memcpy(scsi_buf + sizeof(struct sg_header), cdb, sizeof(cdb));
+   memcpy(scsi_buf + sizeof(struct sg_header), cdb, format_unit_data_len);
    cdb[0] = FORMAT_UNIT;
    cdb[1] = IPR_FORMAT_DATA; /* lun = 0, fmtdata = 1, cmplst = 0, defect list format = 0 */
 
