@@ -152,7 +152,7 @@ int main(int argc, char **argv)
 
    /* end new logic*/
    int inquiry_data_len = sizeof(struct sg_header) + sizeof(inquiry);
-   int mode_select_data_len = sizeof(struct ipr_block_desc) + sizeof(struct ipr_mode_parm_hdr); // sizeof(struct sg_header) + sizeof(mode_select) + sizeof(struct ipr_block_desc);
+   int mode_select_data_len = sizeof(struct sg_header) + sizeof(mode_select) + sizeof(ioctl_buffer);
    int format_unit_data_len = sizeof(struct sg_header) + sizeof(format_unit);
 
    /* Print info */
@@ -416,14 +416,14 @@ command!\n");
 
    mode_select[4] = sizeof(block_desc);
    memcpy(scsi_buf + sizeof(struct sg_header), mode_select, sizeof(mode_select));
-   memcpy(scsi_buf + sizeof(struct sg_header) + sizeof(mode_select), block_desc, sizeof(block_desc));
+   memcpy(scsi_buf + sizeof(struct sg_header) + sizeof(mode_select), ioctl_buffer, sizeof(ioctl_buffer));
 
    printf("   Done.\n");
    printf("Send MODE SELECT command ...\n");
    fflush(stdout);
    // old: write(sg_fd, scsi_buf, mode_select_data_len)
    // sizeof(struct ipr_block_desc) + sizeof(struct ipr_mode_parm_hdr)
-   if (write(sg_fd, ioctl_buffer, mode_select_data_len) < 0)
+   if (write(sg_fd, scsi_buf, mode_select_data_len) < 0)
    {
       fprintf(stderr, "   Write error\n\n");
       close(sg_fd);
