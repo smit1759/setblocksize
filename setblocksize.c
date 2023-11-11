@@ -491,13 +491,13 @@ command!\n");
    // old: write(sg_fd, scsi_buf, mode_select_data_len)
    // sizeof(struct ipr_block_desc) + sizeof(struct ipr_mode_parm_hdr)
    rc = ioctl(sg_fd, SG_IO, &io_hdr_t);
-   exit(0);
-   if (write(sg_fd, &io_hdr_t, sizeof(io_hdr_t)) < 0)
+
+   /*if (write(sg_fd, &io_hdr_t, sizeof(io_hdr_t)) < 0)
    {
       fprintf(stderr, "   Write error\n\n");
       close(sg_fd);
       exit(1);
-   }
+   }*/
    /* Read status (sense_buffer) */
    if (read(sg_fd, scsi_buf, sizeof(struct sg_io_hdr_ibm)) < 0)
    {
@@ -505,6 +505,7 @@ command!\n");
       close(sg_fd);
       exit(1);
    }
+   exit(0);
    printf("   Done.\n");
    /* Error processing */
    printf("Check status ...\n");
