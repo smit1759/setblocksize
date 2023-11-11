@@ -124,7 +124,7 @@ struct sense_data_t
    uint8_t add_sense_bytes[0];
 };
 
-struct sg_io_hdr
+typedef struct sg_io_hdr_ibm
 {
    int interface_id;                 /* [i] 'S' for SCSI generic (required) */
    int dxfer_direction;              /* [i] data transfer direction  */
@@ -148,7 +148,7 @@ struct sg_io_hdr
    int resid;                        /* [o] dxfer_len - actual_transferred */
    unsigned int duration;            /* [o] time taken by cmd (unit: millisec) */
    unsigned int info;                /* [o] auxiliary information */
-};
+} sg_io_hdr_ibm;
 
 static void print_buf(const unsigned char *buf, size_t buf_len)
 {
@@ -461,7 +461,7 @@ command!\n");
    cdb[4] = newSize;
    printf("cdb:\n");
    print_buf(cdb, sizeof(cdb));
-   sg_io_hdr_t io_hdr_t;
+   sg_io_hdr_ibm io_hdr_t;
    struct sense_data_t sd;
    int cdb_size[] = {6, 10, 10, 0, 16, 12, 16, 16};
    io_hdr_t.interface_id = 'S';
