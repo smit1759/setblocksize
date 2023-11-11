@@ -496,7 +496,7 @@ command!\n");
       exit(1);
    }
    /* Read status (sense_buffer) */
-   if (read(sg_fd, scsi_buf, sizeof(struct sg_header)) < 0)
+   if (read(sg_fd, scsi_buf, sizeof(struct sg_io_hdr_ibm)) < 0)
    {
       fprintf(stderr, "   Read error\n\n");
       close(sg_fd);
