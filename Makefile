@@ -46,7 +46,7 @@
 VER             = V0.2
 
 # Target names
-TARGET		= setblocksize-ibm
+TARGET		= setblocksize
 
 # Compilers
 C1		= gcc
@@ -92,10 +92,15 @@ dist: clean
 # Sub rules
 # ******************************************************************************
 
-$(TARGET): $(TARGET).o sg_err.o ibmsglib.o
+ibm: setblocksize-ibm.o sg_err.o ibmsglib.o
 	@echo
 	@echo "Creating binary ..."
-	$(C1) -o $(TARGET) $(TARGET).o sg_err.o ibmsglib.o
+	$(C1) -o setblocksize-ibm setblocksize-ibm.o sg_err.o ibmsglib.o
+
+$(TARGET): $(TARGET).o sg_err.o
+	@echo
+	@echo "Creating binary ..."
+	$(C1) -o $(TARGET) $(TARGET).o sg_err.o
 
 $(TARGET).o: $(TARGET).c
 	@echo

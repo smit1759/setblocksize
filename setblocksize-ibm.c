@@ -116,7 +116,6 @@ int main(int argc, char **argv)
         exit(1);
     }
     printf("   Done.\n");
-    printf("   Done.\n");
     /* Issue mode select to change block size */
     uint8_t num_devs = 0;
     struct devs_to_init_t *cur_dev_init;
@@ -135,7 +134,6 @@ int main(int argc, char **argv)
 
     mode_parm_hdr = (struct ipr_mode_parm_hdr *)ioctl_buffer;
     memset(ioctl_buffer, 0, 255);
-
     mode_parm_hdr->block_desc_len = sizeof(struct ipr_block_desc);
     block_desc = (struct ipr_block_desc *)(mode_parm_hdr + 1);
 
@@ -145,12 +143,14 @@ int main(int argc, char **argv)
     block_desc->block_length[2] = BS & 0xff;
 
     rc = ipr_mode_select(sg_fd, ioctl_buffer, sizeof(struct ipr_block_desc) + sizeof(struct ipr_mode_parm_hdr));
+    printf("\n   Done.\n");
     if (rc)
     {
         close(sg_fd);
         exit(1);
     }
     rc = ipr_format_unit(sg_fd);
+    printf("\n   Done.\n");
     if (rc)
     {
         close(sg_fd);
