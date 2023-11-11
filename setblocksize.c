@@ -410,7 +410,7 @@ command!\n");
    sghp->pack_id = 0;
    sghp->twelve_byte = 0;
    /* clear buffer */
-   memcpy(scsi_buf, 0x00, 65536);
+   // memcpy(scsi_buf, 0x00, 65536);
    memcpy(scsi_buf + sizeof(struct sg_header), mode_select, sizeof(mode_select));
    memcpy(scsi_buf + sizeof(struct sg_header) + sizeof(mode_select), block_desc, sizeof(block_desc));
    printf("   Done.\n");
