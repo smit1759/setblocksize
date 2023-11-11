@@ -86,7 +86,7 @@ To do:          -
 #define BS 512               /* Default blocksize */
 #define IPR_CCB_CDB_LEN 16
 #define SG_DXFER_TO_DEV -2 /* e.g. a SCSI WRITE command */
-
+#define SG_IO 0x2285       /* similar effect as write() followed by read() */
 const char NAME[] = "setblocksize";
 const char VER[] = "V0.2";
 
@@ -479,6 +479,7 @@ command!\n");
    io_hdr_t.dxferp = ioctl_buffer;
    printf("scsi_buf:\n");
    print_buf(&io_hdr_t, sizeof(io_hdr_t));
+   int rc = 0;
    /* end new cdb logic*/
 
    printf("   Done.\n");
@@ -489,6 +490,8 @@ command!\n");
    fflush(stdout);
    // old: write(sg_fd, scsi_buf, mode_select_data_len)
    // sizeof(struct ipr_block_desc) + sizeof(struct ipr_mode_parm_hdr)
+   rc = ioctl(sg_fd, SG_IO, &io_hdr_t);
+   exit(0);
    if (write(sg_fd, &io_hdr_t, sizeof(io_hdr_t)) < 0)
    {
       fprintf(stderr, "   Write error\n\n");
