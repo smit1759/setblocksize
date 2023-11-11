@@ -31,7 +31,7 @@ Header
 #define BS 512                            /* Default blocksize */
 #define SCSI_OFF sizeof(struct sg_header) /* offset to SCSI command data */
 #define INQUIRY_VENDOR 8
-
+#define FILE_NAME "/dev/sg6"
 static unsigned char cmd[SCSI_OFF + 18]; /* SCSI command buffer */
 
 const char NAME[] = "setblocksize";
@@ -168,88 +168,8 @@ static unsigned char *Inquiry()
 
 int main(int argc, char **argv)
 {
-    unsigned short int bs = BS;
-    int timeout = TIMEOUT;
-    int sg_fd;
-    int i;
-    int ok;
-    int buf;
-    char sbuf[256];
-    char *file_name = NULL;
-    unsigned char scsi_buf[65536];
-    uint8_t ioctl_buffer[512];
-    struct ipr_mode_parm_hdr *mode_parm_hdr;
-    struct ipr_block_desc *block_desc;
-    struct sg_header *sghp = (struct sg_header *)scsi_buf;
-    Sg_scsi_id device;
 
-    /* Print info */
-    sprintf(sbuf, "\n");
-    strcat(sbuf, NAME);
-    strcat(sbuf, " ");
-    strcat(sbuf, VER);
-    strcat(sbuf, "\n\n");
-    printf(sbuf);
-
-    /* Check parameters */
-    printf("Checking parameters ...\n");
-    for (i = 1; i < argc; i++)
-    {
-        if (*argv[i] == '-')
-        {
-            if (!strncmp(argv[i], "-b", 2))
-            {
-                /* Use specified blocksize */
-                printf("   Blocksize specified.\n");
-                ok = sscanf(argv[i], "-b%d", &buf);
-                bs = (unsigned short int)buf;
-                if (ok != 1)
-                    break;
-            }
-            else if (!strncmp(argv[i], "-t", 2))
-            {
-                /* Use specified timeout */
-                printf("   Timeout specified.\n");
-                ok = sscanf(argv[i], "-t%d", &buf);
-                if ((buf < 1) || (buf > 1800))
-                    break;
-                timeout = buf * 60 * HZ;
-                if (ok != 1)
-                    break;
-            }
-            else
-            {
-                printf("   Unknown parameter: %s\n", argv[i]);
-                file_name = 0;
-                break;
-            }
-        }
-        else
-        {
-            if (file_name == NULL)
-                file_name = argv[i];
-            else
-            {
-                printf("   Parameter error\n");
-                file_name = 0;
-                break;
-            }
-        }
-    }
-    if (file_name == NULL)
-    {
-        /* Parameter error, print help message */
-        fprintf(stderr, "   Parameter error!\n");
-        sprintf(sbuf, "   Usage: '");
-        strcat(sbuf, NAME);
-        strcat(sbuf,
-               " [-b<Blocksize in Byte>] [-t<Timeout in Minutes>] <sg_device>'\n\n");
-        fprintf(stderr, sbuf);
-        exit(1);
-    }
-    printf("   Done.\n");
-    printf("Opening FD (%s)", file_name);
-    if ((fd = open(file_name, O_RDWR | O_EXCL)) < 0)
+    if ((fd = open(FILE_NAME, O_RDWR | O_EXCL)) < 0)
     {
         fprintf(stderr, "   File open error! (root permissions?)\n\n");
         exit(1);
@@ -259,7 +179,7 @@ int main(int argc, char **argv)
     if (ioctl(fd, SG_GET_TIMEOUT, NULL) < 0)
     {
         fprintf(stderr, "   File open error!\n");
-        fprintf(stderr, "   '%s' doesn't seem to be a sg device\n\n", file_name);
+        fprintf(stderr, "   '%s' doesn't seem to be a sg device\n\n", FILE_NAME);
         close(fd);
         exit(1);
     }
