@@ -409,21 +409,17 @@ command!\n");
    sghp->reply_len = sizeof(struct sg_header);
    sghp->pack_id = 0;
    sghp->twelve_byte = 0;
-   memcpy(scsi_buf + sizeof(struct sg_header), mode_select, 0x06);
-   memcpy(scsi_buf + sizeof(struct sg_header) + 6, block_desc, 0x0C);
+   /* clear buffer */
+   memcpy(scsi_buf, 0x00, 65536);
+   memcpy(scsi_buf + sizeof(struct sg_header), mode_select, sizeof(mode_select));
+   memcpy(scsi_buf + sizeof(struct sg_header) + sizeof(mode_select), block_desc, sizeof(block_desc));
    printf("   Done.\n");
    printf("Send MODE SELECT command ...\n");
-   int newSize = sizeof(struct ipr_block_desc) + sizeof(struct ipr_mode_parm_hdr);
-   printf("New size: %x\n", sizeof(struct sg_header));
-   printf("Old size: %x\n", mode_select_data_len);
-   printf("\npara_list\n");
-   print_buf(para_list, sizeof(para_list));
-   printf("\nblock_desc\n");
-   print_buf(block_desc, sizeof(block_desc));
    fflush(stdout);
    // old: write(sg_fd, scsi_buf, mode_select_data_len)
    // sizeof(struct ipr_block_desc) + sizeof(struct ipr_mode_parm_hdr)
-   if (write(sg_fd, scsi_buf, sizeof(struct sg_header)) < 0)
+   int lengthOfPayload = (sizeof(struct sg_header) + sizeof(mode_select) + sizeof(block_desc));
+   if (write(sg_fd, scsi_buf, lengthOfPayload) < 0)
    {
       fprintf(stderr, "   Write error\n\n");
       close(sg_fd);
