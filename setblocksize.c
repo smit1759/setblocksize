@@ -453,7 +453,7 @@ command!\n");
    memcpy(scsi_buf + sizeof(struct sg_header), mode_select, 0x06);
    memcpy(scsi_buf + sizeof(struct sg_header) + 6, block_desc, 0x0C);
    /* new cdb logic*/
-   uint8_t newSize = sizeof(struct ipr_block_desc) + sizeof(struct ipr_mode_parm_hdr);
+   uint8_t newSize = sizeof(struct sg_header) + sizeof(struct ipr_block_desc) + sizeof(struct ipr_mode_parm_hdr);
    uint8_t cdb[IPR_CCB_CDB_LEN];
    memset(cdb, 0, IPR_CCB_CDB_LEN);
    cdb[0] = MODE_SELECT;
