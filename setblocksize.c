@@ -124,7 +124,7 @@ struct sense_data_t
    uint8_t add_sense_bytes[0];
 };
 
-typedef struct sg_io_hdr
+struct sg_io_hdr
 {
    int interface_id;                 /* [i] 'S' for SCSI generic (required) */
    int dxfer_direction;              /* [i] data transfer direction  */
@@ -132,8 +132,7 @@ typedef struct sg_io_hdr
    unsigned char mx_sb_len;          /* [i] max length to write to sbp */
    unsigned short int iovec_count;   /* [i] 0 implies no scatter gather */
    unsigned int dxfer_len;           /* [i] byte count of data transfer */
-   void *dxferp;                     /* [i], [*io] points to data transfer memory
-                    or scatter gather list */
+   void *dxferp;                     /* [i], [*io] points to data transfer memory or scatter gather list */
    unsigned char *cmdp;              /* [i], [*i] points to command to perform */
    unsigned char *sbp;               /* [i], [*o] points to sense_buffer memory */
    unsigned int timeout;             /* [i] MAX_UINT->no timeout (unit: millisec) */
@@ -149,7 +148,7 @@ typedef struct sg_io_hdr
    int resid;                        /* [o] dxfer_len - actual_transferred */
    unsigned int duration;            /* [o] time taken by cmd (unit: millisec) */
    unsigned int info;                /* [o] auxiliary information */
-} sg_io_hdr_t;
+};
 
 static void print_buf(const unsigned char *buf, size_t buf_len)
 {
