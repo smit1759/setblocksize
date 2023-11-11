@@ -519,7 +519,8 @@ command!\n");
    printf("   Done.\n");
    printf("Send FORMAT UNIT command ...\n");
    fflush(stdout);
-   if (write(sg_fd, scsi_buf, sizeof(cdb)) < 0)
+   int formatUnitLength = sizeof(struct sg_header) + sizeof(cdb) + sizeof(defect_list_hdr);
+   if (write(sg_fd, scsi_buf, sizeof(scsi_buf)) < 0)
    {
       fprintf(stderr, "   Write error\n\n");
       close(sg_fd);
