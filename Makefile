@@ -46,7 +46,7 @@
 VER             = V0.2
 
 # Target names
-TARGET		= setblocksize
+TARGET		= setblocksize-ibm
 
 # Compilers
 C1		= gcc
