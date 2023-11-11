@@ -95,7 +95,7 @@ dist: clean
 $(TARGET): $(TARGET).o sg_err.o
 	@echo
 	@echo "Creating binary ..."
-	$(C1) -o $(TARGET) $(TARGET).o sg_err.o
+	$(C1) -o $(TARGET) $(TARGET).o sg_err.o iprlib.c iprlib.h
 
 $(TARGET).o: $(TARGET).c
 	@echo
@@ -105,7 +105,7 @@ $(TARGET).o: $(TARGET).c
 sg_err.o: sg_err.c
 	@echo
 	@echo "Creating error handling object file ..."
-	$(C1) $(C1FLAGS) -c -o sg_err.o sg_err.c
+	$(C1) $(C1FLAGS) -c -o sg_err.o sg_err.c iprlib.c iprlib.h
 
 
 # EOF
