@@ -183,6 +183,7 @@ int sg_ioctl(int fd, u8 cdb[IPR_CCB_CDB_LEN],
  **/
 int ipr_mode_select(int fd, void *buff, int length)
 {
+    printf("start issue of mode select\n");
     u8 cdb[IPR_CCB_CDB_LEN];
     struct sense_data_t sense_data;
     int rc;
@@ -206,7 +207,7 @@ int ipr_mode_select(int fd, void *buff, int length)
     {
         printf("error issuing MODE SELECT");
     }
-    close(fd);
+    // close(fd);
     return rc;
 }
 
@@ -248,7 +249,7 @@ int ipr_format_unit(int fd)
     if (rc != 0)
         printf("failed format unit rc");
 
-    close(fd);
+    // close(fd);
 
     return rc;
 }

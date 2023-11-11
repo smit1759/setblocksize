@@ -145,8 +145,17 @@ int main(int argc, char **argv)
     block_desc->block_length[2] = BS & 0xff;
 
     rc = ipr_mode_select(sg_fd, ioctl_buffer, sizeof(struct ipr_block_desc) + sizeof(struct ipr_mode_parm_hdr));
-
+    if (rc)
+    {
+        close(sg_fd);
+        exit(1);
+    }
     rc = ipr_format_unit(sg_fd);
+    if (rc)
+    {
+        close(sg_fd);
+        exit(1);
+    }
     /* unbind device
             if (ipr_jbod_sysfs_bind(dev,
                         IPR_JBOD_SYSFS_UNBIND))
