@@ -108,6 +108,14 @@ struct ipr_mode_parm_hdr
    uint8_t block_desc_len;
 };
 
+static void print_buf(const unsigned char *buf, size_t buf_len)
+{
+   size_t i = 0;
+   for (i = 0; i < buf_len; ++i)
+      fprintf(stdout, "%02X%s", buf[i],
+              (i + 1) % 16 == 0 ? "\r\n" : " ");
+}
+
 int main(int argc, char **argv)
 {
    unsigned short int bs = BS;
@@ -129,7 +137,7 @@ int main(int argc, char **argv)
    /* MODE SELECT command */
    unsigned char mode_select[6] = {0x15, 0x10, 0x00, 0x00, 0x0C, 0x00};
    /* FORMAT UNIT command */
-   unsigned char format_unit[6] = {0x04, 0x10, 0x00, 0x00, 0x00, 0x00};
+   unsigned char format_unit[6] = {0x04, 0x00, 0x00, 0x00, 0x00, 0x00};
    /* Parameter list with block descriptor */
    unsigned char para_list[12] = {0x00, 0x00, 0x00, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
    /* new block descriptor and params from iprconfig */
@@ -408,6 +416,10 @@ command!\n");
    int newSize = sizeof(struct ipr_block_desc) + sizeof(struct ipr_mode_parm_hdr);
    printf("New size: %x\n", newSize);
    printf("Old size: %x\n", mode_select_data_len);
+   printf("\npara_list\n");
+   print_buf(para_list, sizeof(para_list));
+   printf("\nscsi_buf\n");
+   print_buf(scsi_buf, sizeof(scsi_buf));
    fflush(stdout);
    // old: write(sg_fd, scsi_buf, mode_select_data_len)
    // sizeof(struct ipr_block_desc) + sizeof(struct ipr_mode_parm_hdr)
