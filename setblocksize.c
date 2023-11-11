@@ -414,16 +414,16 @@ command!\n");
    printf("   Done.\n");
    printf("Send MODE SELECT command ...\n");
    int newSize = sizeof(struct ipr_block_desc) + sizeof(struct ipr_mode_parm_hdr);
-   printf("New size: %x\n", newSize);
+   printf("New size: %x\n", sizeof(struct sg_header));
    printf("Old size: %x\n", mode_select_data_len);
    printf("\npara_list\n");
    print_buf(para_list, sizeof(para_list));
-   printf("\nscsi_buf\n");
+   printf("\nblock_desc\n");
    print_buf(block_desc, sizeof(block_desc));
    fflush(stdout);
    // old: write(sg_fd, scsi_buf, mode_select_data_len)
    // sizeof(struct ipr_block_desc) + sizeof(struct ipr_mode_parm_hdr)
-   if (write(sg_fd, scsi_buf, mode_select_data_len) < 0)
+   if (write(sg_fd, scsi_buf, sizeof(struct sg_header)) < 0)
    {
       fprintf(stderr, "   Write error\n\n");
       close(sg_fd);
