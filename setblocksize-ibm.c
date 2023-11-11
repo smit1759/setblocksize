@@ -26,7 +26,7 @@ Header
 #include <scsi/sg.h>
 #include "include/sg_err.h"
 #include <stdint.h>
-#include "iprlib.h"
+#include "ibmsglib.h"
 
 #define TIMEOUT (48000 * HZ)              /* 800 minute FORMAT UNIT default timeout */
 #define BS 512                            /* Default blocksize */

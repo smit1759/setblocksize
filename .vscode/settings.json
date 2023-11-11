@@ -2,6 +2,8 @@
     "files.associations": {
         "scsi.h": "c",
         "unistd.h": "c",
-        "stdlib.h": "c"
+        "stdlib.h": "c",
+        "ibmsglib.h": "c",
+        "iprlib.h": "c"
     }
 }

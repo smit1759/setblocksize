@@ -92,21 +92,25 @@ dist: clean
 # Sub rules
 # ******************************************************************************
 
-$(TARGET): $(TARGET).o sg_err.o
+$(TARGET): $(TARGET).o sg_err.o ibmsglib.o
 	@echo
 	@echo "Creating binary ..."
-	$(C1) -o $(TARGET) $(TARGET).o sg_err.o iprlib.c iprlib.h
+	$(C1) -o $(TARGET) $(TARGET).o sg_err.o ibmsglib.o
 
 $(TARGET).o: $(TARGET).c
 	@echo
 	@echo "Creating main object file ..."
-	$(C1) $(C1FLAGS) -c -o $(TARGET).o $(TARGET).c iprlib.c iprlib.h
+	$(C1) $(C1FLAGS) -c -o $(TARGET).o $(TARGET).c
 
 sg_err.o: sg_err.c
 	@echo
 	@echo "Creating error handling object file ..."
-	$(C1) $(C1FLAGS) -c -o sg_err.o sg_err.c iprlib.c iprlib.h
+	$(C1) $(C1FLAGS) -c -o sg_err.o sg_err.c
 
+ibmsglib.o: ibmsglib.c
+	@echo
+	@echo "Creating error handling object file ..."
+	$(C1) $(C1FLAGS) -c -o ibmsglib.o ibmsglib.c
 
 # EOF
 
