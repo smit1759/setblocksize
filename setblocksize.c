@@ -146,8 +146,8 @@ int main(int argc, char **argv)
    mode_parm_hdr->block_desc_len = sizeof(struct ipr_block_desc);
    block_desc = (struct ipr_block_desc *)(mode_parm_hdr + 1);
    block_desc->block_length[0] = 0x00;
-   block_desc->block_length[1] = BS >> 8;
-   block_desc->block_length[2] = BS & 0xff;
+   block_desc->block_length[1] = (unsigned char)((bs & 0xFF00) >> 8);
+   block_desc->block_length[2] = (unsigned char)(bs & 0x00FF);
    /* end new logic*/
    int inquiry_data_len = sizeof(struct sg_header) + sizeof(inquiry);
    int mode_select_data_len = sizeof(struct sg_header) + sizeof(mode_select) + sizeof(struct ipr_block_desc);
@@ -411,9 +411,11 @@ command!\n");
    sghp->twelve_byte = 0;
    /* clear buffer */
    // memcpy(scsi_buf, 0x00, 65536);
+
    mode_select[4] = sizeof(block_desc);
    memcpy(scsi_buf + sizeof(struct sg_header), mode_select, sizeof(mode_select));
    memcpy(scsi_buf + sizeof(struct sg_header) + sizeof(mode_select), block_desc, sizeof(block_desc));
+
    printf("   Done.\n");
    printf("Send MODE SELECT command ...\n");
    fflush(stdout);
