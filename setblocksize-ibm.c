@@ -36,6 +36,7 @@ static unsigned char cmd[SCSI_OFF + 18]; /* SCSI command buffer */
 
 const char NAME[] = "setblocksize";
 const char VER[] = "V0.2";
+int fd;
 
 static void print_buf(const unsigned char *buf, size_t buf_len)
 {
@@ -50,8 +51,7 @@ static int handle_scsi_cmd(unsigned cmd_len,      /* command length */
                            unsigned in_size,      /* input data size */
                            unsigned char *i_buff, /* input buffer */
                            unsigned out_size,     /* output data size */
-                           unsigned char *o_buff, /* output buffer */
-                           int fd                 /* scsi fd */
+                           unsigned char *o_buff  /* output buffer */
 )
 {
     int status = 0;
@@ -136,7 +136,7 @@ static int handle_scsi_cmd(unsigned cmd_len,      /* command length */
 #define INQUIRY_VENDOR 8 /* Offset in reply data to vendor name */
 
 /* request vendor brand and model */
-static unsigned char *Inquiry(int fd /* scsi fd*/)
+static unsigned char *Inquiry()
 {
     unsigned char Inqbuffer[SCSI_OFF + INQUIRY_REPLY_LEN];
     unsigned char cmdblk[INQUIRY_CMDLEN] =
@@ -158,7 +158,7 @@ static unsigned char *Inquiry(int fd /* scsi fd*/)
      */
 
     if (handle_scsi_cmd(sizeof(cmdblk), 0, cmd,
-                        sizeof(Inqbuffer) - SCSI_OFF, Inqbuffer, fd))
+                        sizeof(Inqbuffer) - SCSI_OFF, Inqbuffer))
     {
         fprintf(stderr, "Inquiry failed\n");
         exit(2);
@@ -248,18 +248,18 @@ int main(int argc, char **argv)
         exit(1);
     }
     printf("   Done.\n");
-    if ((sg_fd = open(file_name, O_RDWR | O_EXCL)) < 0)
+    if ((fd = open(file_name, O_RDWR | O_EXCL)) < 0)
     {
         fprintf(stderr, "   File open error! (root permissions?)\n\n");
         exit(1);
     }
     /* Just to be safe, check we have a sg device by trying an ioctl */
-    if (ioctl(sg_fd, SG_GET_TIMEOUT, NULL) < 0)
+    if (ioctl(fd, SG_GET_TIMEOUT, NULL) < 0)
     {
         fprintf(stderr, "   File open error!\n");
         fprintf(stderr, "   '%s' doesn't seem to be a sg device\n\n", file_name);
-        close(sg_fd);
+        close(fd);
         exit(1);
     }
-    printf("%s\n", Inquiry(sg_fd) + INQUIRY_VENDOR);
+    printf("%s\n", Inquiry() + INQUIRY_VENDOR);
 }
