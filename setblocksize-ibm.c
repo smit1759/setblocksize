@@ -248,11 +248,13 @@ int main(int argc, char **argv)
         exit(1);
     }
     printf("   Done.\n");
+
     if ((fd = open(file_name, O_RDWR | O_EXCL)) < 0)
     {
         fprintf(stderr, "   File open error! (root permissions?)\n\n");
         exit(1);
     }
+    printf("Opened FD");
     /* Just to be safe, check we have a sg device by trying an ioctl */
     if (ioctl(fd, SG_GET_TIMEOUT, NULL) < 0)
     {
