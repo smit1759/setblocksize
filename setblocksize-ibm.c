@@ -248,7 +248,7 @@ int main(int argc, char **argv)
         exit(1);
     }
     printf("   Done.\n");
-
+    printf("Opening FD (%s)", file_name);
     if ((fd = open(file_name, O_RDWR | O_EXCL)) < 0)
     {
         fprintf(stderr, "   File open error! (root permissions?)\n\n");
