@@ -137,7 +137,7 @@ int main(int argc, char **argv)
    /* MODE SELECT command */
    unsigned char mode_select[6] = {0x15, 0x10, 0x00, 0x00, 0x08, 0x00};
    /* FORMAT UNIT command */
-   unsigned char format_unit[6] = {0x04, 0x00, 0x00, 0x00, 0x00, 0x00};
+   unsigned char format_unit[6] = {0x04, 0x10, 0x00, 0x00, 0x00, 0x00};
    /* Parameter list with block descriptor */
    unsigned char para_list[12] = {0x00, 0x00, 0x00, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
    /* new block descriptor and params from iprconfig */
@@ -149,9 +149,9 @@ int main(int argc, char **argv)
    block_desc->block_length[1] = BS >> 8;
    block_desc->block_length[2] = BS & 0xff;
    /* end new logic*/
-   int inquiry_data_len = sizeof(struct sg_header) + 0x06;
-   int mode_select_data_len = sizeof(struct sg_header) + 0x06 + sizeof(struct ipr_block_desc);
-   int format_unit_data_len = sizeof(struct sg_header) + 0x06;
+   int inquiry_data_len = sizeof(struct sg_header) + sizeof(inquiry);
+   int mode_select_data_len = sizeof(struct sg_header) + sizeof(mode_select) + sizeof(struct ipr_block_desc);
+   int format_unit_data_len = sizeof(struct sg_header) + sizeof(format_unit);
 
    /* Print info */
    sprintf(sbuf, "\n");
@@ -411,6 +411,7 @@ command!\n");
    sghp->twelve_byte = 0;
    /* clear buffer */
    // memcpy(scsi_buf, 0x00, 65536);
+   mode_select[4] = sizeof(block_desc);
    memcpy(scsi_buf + sizeof(struct sg_header), mode_select, sizeof(mode_select));
    memcpy(scsi_buf + sizeof(struct sg_header) + sizeof(mode_select), block_desc, sizeof(block_desc));
    printf("   Done.\n");
@@ -418,9 +419,6 @@ command!\n");
    fflush(stdout);
    // old: write(sg_fd, scsi_buf, mode_select_data_len)
    // sizeof(struct ipr_block_desc) + sizeof(struct ipr_mode_parm_hdr)
-   int lengthOfPayload = (sizeof(struct sg_header) + sizeof(mode_select) + sizeof(block_desc));
-   printf("Size of Payload: %x", lengthOfPayload);
-   printf("Size of hardcoded: %x", mode_select_data_len);
    if (write(sg_fd, scsi_buf, mode_select_data_len) < 0)
    {
       fprintf(stderr, "   Write error\n\n");
