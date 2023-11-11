@@ -137,7 +137,7 @@ int main(int argc, char **argv)
    /* MODE SELECT command */
    unsigned char mode_select[6] = {0x15, 0x10, 0x00, 0x00, 0x08, 0x00};
    /* FORMAT UNIT command */
-   unsigned char format_unit[6] = {0x04, 0x00, 0x00, 0x00, 0x00, 0x00};
+   unsigned char format_unit[6] = {0x04, 0x18, 0x00, 0x00, 0x00, 0x00};
    /* Parameter list with block descriptor */
    unsigned char para_list[12] = {0x00, 0x00, 0x00, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
    /* new block descriptor and params from iprconfig */
@@ -417,7 +417,7 @@ command!\n");
    mode_select[4] = sizeof(ioctl_buffer);
    memcpy(scsi_buf + sizeof(struct sg_header), mode_select, sizeof(mode_select));
    memcpy(scsi_buf + sizeof(struct sg_header) + sizeof(mode_select), ioctl_buffer, sizeof(ioctl_buffer));
-
+   print_buf(ioctl_buffer, sizeof(ioctl_buffer));
    printf("   Done.\n");
    printf("Send MODE SELECT command ...\n");
    fflush(stdout);
