@@ -147,12 +147,12 @@ int main(int argc, char **argv)
    mode_parm_hdr->block_desc_len = sizeof(struct ipr_block_desc);
    block_desc = (struct ipr_block_desc *)(mode_parm_hdr + 1);
    block_desc->block_length[0] = 0x00;
-   block_desc->block_length[1] = (unsigned char)((bs & 0xFF00) >> 8);
-   block_desc->block_length[2] = (unsigned char)(bs & 0x00FF);
+   block_desc->block_length[1] = bs >> 8;
+   block_desc->block_length[2] = bs & 0xff;
 
    /* end new logic*/
    int inquiry_data_len = sizeof(struct sg_header) + sizeof(inquiry);
-   int mode_select_data_len = sizeof(struct sg_header) + sizeof(mode_select) + sizeof(struct ipr_block_desc);
+   int mode_select_data_len = sizeof(struct ipr_block_desc) + sizeof(struct ipr_mode_parm_hdr); // sizeof(struct sg_header) + sizeof(mode_select) + sizeof(struct ipr_block_desc);
    int format_unit_data_len = sizeof(struct sg_header) + sizeof(format_unit);
 
    /* Print info */
@@ -423,7 +423,7 @@ command!\n");
    fflush(stdout);
    // old: write(sg_fd, scsi_buf, mode_select_data_len)
    // sizeof(struct ipr_block_desc) + sizeof(struct ipr_mode_parm_hdr)
-   if (write(sg_fd, scsi_buf, mode_select_data_len) < 0)
+   if (write(sg_fd, ioctl_buffer, mode_select_data_len) < 0)
    {
       fprintf(stderr, "   Write error\n\n");
       close(sg_fd);
