@@ -414,7 +414,7 @@ command!\n");
    /* clear buffer */
    // memcpy(scsi_buf, 0x00, 65536);
 
-   mode_select[4] = sizeof(block_desc);
+   mode_select[4] = sizeof(ioctl_buffer);
    memcpy(scsi_buf + sizeof(struct sg_header), mode_select, sizeof(mode_select));
    memcpy(scsi_buf + sizeof(struct sg_header) + sizeof(mode_select), ioctl_buffer, sizeof(ioctl_buffer));
 
