@@ -170,7 +170,7 @@ int main(int argc, char **argv)
 
    /* end new logic*/
    int inquiry_data_len = sizeof(struct sg_header) + sizeof(inquiry);
-   int mode_select_data_len = sizeof(struct sg_header) + sizeof(mode_select) + sizeof(ioctl_buffer);
+   int mode_select_data_len = sizeof(ioctl_buffer) + sizeof(mode_select) + ;
    int format_unit_data_len = sizeof(struct sg_header) + sizeof(format_unit);
 
    /* Print info */
@@ -433,8 +433,8 @@ command!\n");
    // memcpy(scsi_buf, 0x00, 65536);
 
    mode_select[4] = sizeof(ioctl_buffer);
-   memcpy(scsi_buf + sizeof(struct sg_header), mode_select, sizeof(mode_select));
-   memcpy(scsi_buf + sizeof(struct sg_header) + sizeof(mode_select), ioctl_buffer, sizeof(ioctl_buffer));
+   memcpy(scsi_buf + sizeof(struct sg_header), ioctl_buffer, sizeof(ioctl_buffer));
+   memcpy(scsi_buf + sizeof(struct sg_header) + sizeof(ioctl_buffer), mode_select, sizeof(mode_select));
    print_buf(scsi_buf, mode_select_data_len);
 
    printf("   Done.\n");
