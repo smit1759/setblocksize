@@ -484,7 +484,7 @@ command!\n");
 
    printf("   Done.\n");
    printf("Send MODE SELECT command ...\n");
-   int newSize = sizeof(block_desc);
+
    printf("New size: %x", newSize);
    printf("Old size: %x", mode_select_data_len);
    fflush(stdout);
