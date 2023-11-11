@@ -248,5 +248,18 @@ int main(int argc, char **argv)
         exit(1);
     }
     printf("   Done.\n");
-    printf("%s\n", Inquiry() + INQUIRY_VENDOR);
+    if ((sg_fd = open(file_name, O_RDWR | O_EXCL)) < 0)
+    {
+        fprintf(stderr, "   File open error! (root permissions?)\n\n");
+        exit(1);
+    }
+    /* Just to be safe, check we have a sg device by trying an ioctl */
+    if (ioctl(sg_fd, SG_GET_TIMEOUT, NULL) < 0)
+    {
+        fprintf(stderr, "   File open error!\n");
+        fprintf(stderr, "   '%s' doesn't seem to be a sg device\n\n", file_name);
+        close(sg_fd);
+        exit(1);
+    }
+    printf("%s\n", Inquiry(sg_fd) + INQUIRY_VENDOR);
 }
