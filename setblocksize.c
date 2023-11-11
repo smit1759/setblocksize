@@ -137,10 +137,11 @@ int main(int argc, char **argv)
    /* MODE SELECT command */
    unsigned char mode_select[6] = {0x15, 0x10, 0x00, 0x00, 0x08, 0x00};
    /* FORMAT UNIT command */
-   unsigned char format_unit[6] = {0x04, 0x10, 0x00, 0x00, 0x00, 0x00};
+   unsigned char format_unit[6] = {0x04, 0x00, 0x00, 0x00, 0x00, 0x00};
    /* Parameter list with block descriptor */
    unsigned char para_list[12] = {0x00, 0x00, 0x00, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
    /* new block descriptor and params from iprconfig */
+
    mode_parm_hdr = (struct ipr_mode_parm_hdr *)ioctl_buffer;
    memset(ioctl_buffer, 0, 255);
    mode_parm_hdr->block_desc_len = sizeof(struct ipr_block_desc);
@@ -148,6 +149,7 @@ int main(int argc, char **argv)
    block_desc->block_length[0] = 0x00;
    block_desc->block_length[1] = (unsigned char)((bs & 0xFF00) >> 8);
    block_desc->block_length[2] = (unsigned char)(bs & 0x00FF);
+
    /* end new logic*/
    int inquiry_data_len = sizeof(struct sg_header) + sizeof(inquiry);
    int mode_select_data_len = sizeof(struct sg_header) + sizeof(mode_select) + sizeof(struct ipr_block_desc);
@@ -414,7 +416,7 @@ command!\n");
 
    mode_select[4] = sizeof(block_desc);
    memcpy(scsi_buf + sizeof(struct sg_header), mode_select, sizeof(mode_select));
-   memcpy(scsi_buf + sizeof(struct sg_header) + sizeof(mode_select), block_desc, sizeof(block_desc));
+   memcpy(scsi_buf + sizeof(struct sg_header) + sizeof(mode_select) + 1, block_desc, sizeof(block_desc));
 
    printf("   Done.\n");
    printf("Send MODE SELECT command ...\n");
