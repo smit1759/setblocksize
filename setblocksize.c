@@ -435,7 +435,8 @@ command!\n");
    mode_select[4] = sizeof(ioctl_buffer);
    memcpy(scsi_buf + sizeof(struct sg_header), mode_select, sizeof(mode_select));
    memcpy(scsi_buf + sizeof(struct sg_header) + sizeof(mode_select), ioctl_buffer, sizeof(ioctl_buffer));
-   print_buf(ioctl_buffer, sizeof(ioctl_buffer));
+   print_buf(scsi_buf, mode_select_data_len);
+
    printf("   Done.\n");
    printf("Send MODE SELECT command ...\n");
    fflush(stdout);
