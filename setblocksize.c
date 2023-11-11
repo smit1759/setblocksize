@@ -477,7 +477,7 @@ command!\n");
    io_hdr_t.cmdp = cdb;
    io_hdr_t.dxfer_direction = SG_DXFER_TO_DEV;
    io_hdr_t.dxfer_len = newSize;
-   io_hdr_t.dxferp = ioctl_buffer;
+   io_hdr_t.dxferp = scsi_buf;
    printf("scsi_buf:\n");
    print_buf(&io_hdr_t, sizeof(io_hdr_t));
    int rc = 0;
