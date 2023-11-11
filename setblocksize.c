@@ -405,6 +405,9 @@ command!\n");
    memcpy(scsi_buf + sizeof(struct sg_header) + 6, block_desc, 0x0C);
    printf("   Done.\n");
    printf("Send MODE SELECT command ...\n");
+   int newSize = sizeof(struct ipr_block_desc) + sizeof(struct ipr_mode_parm_hdr);
+   printf("New size: %x", newSize);
+   printf("Old size: %x", mode_select_data_len);
    fflush(stdout);
    // old: write(sg_fd, scsi_buf, mode_select_data_len)
    // sizeof(struct ipr_block_desc) + sizeof(struct ipr_mode_parm_hdr)
