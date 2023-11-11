@@ -129,7 +129,7 @@ int main(int argc, char **argv)
    /* MODE SELECT command */
    unsigned char mode_select[6] = {0x15, 0x10, 0x00, 0x00, 0x0C, 0x00};
    /* FORMAT UNIT command */
-   unsigned char format_unit[6] = {0x04, 0x00, 0x00, 0x00, 0x00, 0x00};
+   unsigned char format_unit[6] = {0x04, 0x10, 0x00, 0x00, 0x00, 0x00};
    /* Parameter list with block descriptor */
    unsigned char para_list[12] = {0x00, 0x00, 0x00, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
    /* new block descriptor and params from iprconfig */
@@ -406,8 +406,8 @@ command!\n");
    printf("   Done.\n");
    printf("Send MODE SELECT command ...\n");
    int newSize = sizeof(struct ipr_block_desc) + sizeof(struct ipr_mode_parm_hdr);
-   printf("New size: %x", newSize);
-   printf("Old size: %x", mode_select_data_len);
+   printf("New size: %x\n", newSize);
+   printf("Old size: %x\n", mode_select_data_len);
    fflush(stdout);
    // old: write(sg_fd, scsi_buf, mode_select_data_len)
    // sizeof(struct ipr_block_desc) + sizeof(struct ipr_mode_parm_hdr)
@@ -465,6 +465,7 @@ command!\n");
    sghp->twelve_byte = 0;
    memcpy(scsi_buf + sizeof(struct sg_header), format_unit, 0x06);
    buf = timeout;
+
    if (ioctl(sg_fd, SG_SET_TIMEOUT, &buf) < 0)
    {
       fprintf(stderr, "   Error!\n");
