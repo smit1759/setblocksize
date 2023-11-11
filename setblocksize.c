@@ -170,7 +170,7 @@ int main(int argc, char **argv)
 
    /* end new logic*/
    int inquiry_data_len = sizeof(struct sg_header) + sizeof(inquiry);
-   int mode_select_data_len = sizeof(ioctl_buffer) + sizeof(mode_select) + ;
+   int mode_select_data_len = sizeof(ioctl_buffer) + sizeof(mode_select);
    int format_unit_data_len = sizeof(struct sg_header) + sizeof(format_unit);
 
    /* Print info */
