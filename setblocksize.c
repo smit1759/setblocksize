@@ -84,7 +84,10 @@ To do:          -
 
 #define TIMEOUT (48000 * HZ) /* 800 minute FORMAT UNIT default timeout */
 #define BS 512               /* Default blocksize */
-
+#define IPR_DEFECT_LIST_HDR_LEN 4
+#define IPR_FORMAT_DATA 0x10
+#define IPR_CCB_CDB_LEN 4
+#define IPR_CCB_CDB_LEN 16
 const char NAME[] = "setblocksize";
 const char VER[] = "V0.2";
 
@@ -106,6 +109,21 @@ struct ipr_mode_parm_hdr
    uint8_t medium_type;
    uint8_t device_spec_parms;
    uint8_t block_desc_len;
+};
+
+struct sense_data_t
+{
+   uint8_t error_code;
+   uint8_t segment_numb;
+   uint8_t sense_key;
+   uint8_t info[4];
+   uint8_t add_sense_len;
+   uint8_t cmd_spec_info[4];
+   uint8_t add_sense_code;
+   uint8_t add_sense_code_qual;
+   uint8_t field_rep_unit_code;
+   uint8_t sense_key_spec[3];
+   uint8_t add_sense_bytes[0];
 };
 
 static void print_buf(const unsigned char *buf, size_t buf_len)
@@ -137,7 +155,7 @@ int main(int argc, char **argv)
    /* MODE SELECT command */
    unsigned char mode_select[6] = {0x15, 0x10, 0x00, 0x00, 0x08, 0x00};
    /* FORMAT UNIT command */
-   unsigned char format_unit[6] = {0x04, 0x18, 0x00, 0x00, 0x00, 0x00};
+   unsigned char format_unit[6] = {0x04, 0x00, 0x00, 0x00, 0x00, 0x00};
    /* Parameter list with block descriptor */
    unsigned char para_list[12] = {0x00, 0x00, 0x00, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
    /* new block descriptor and params from iprconfig */
@@ -477,6 +495,18 @@ command!\n");
    sghp->twelve_byte = 0;
    memcpy(scsi_buf + sizeof(struct sg_header), format_unit, 0x06);
    buf = timeout;
+   /* new format unit logic */
+   uint8_t cdb[IPR_CCB_CDB_LEN];
+   uint8_t cdb[IPR_CCB_CDB_LEN];
+   struct sense_data_t sense_data;
+   uint8_t *defect_list_hdr;
+   int length = IPR_DEFECT_LIST_HDR_LEN;
+   memset(cdb, 0, IPR_CCB_CDB_LEN);
+
+   defect_list_hdr = calloc(1, IPR_DEFECT_LIST_HDR_LEN);
+   memcpy(scsi_buf + sizeof(struct sg_header), cdb, sizeof(cdb));
+   cdb[0] = FORMAT_UNIT;
+   cdb[1] = IPR_FORMAT_DATA; /* lun = 0, fmtdata = 1, cmplst = 0, defect list format = 0 */
 
    if (ioctl(sg_fd, SG_SET_TIMEOUT, &buf) < 0)
    {
@@ -488,7 +518,7 @@ command!\n");
    printf("   Done.\n");
    printf("Send FORMAT UNIT command ...\n");
    fflush(stdout);
-   if (write(sg_fd, scsi_buf, format_unit_data_len) < 0)
+   if (write(sg_fd, scsi_buf, sizeof(cdb)) < 0)
    {
       fprintf(stderr, "   Write error\n\n");
       close(sg_fd);
