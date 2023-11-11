@@ -405,7 +405,7 @@ command!\n");
    memcpy(scsi_buf + sizeof(struct sg_header) + 6, block_desc, 0x0C);
    printf("   Done.\n");
    printf("Send MODE SELECT command ...\n");
-   int newSize = sizeof(struct ipr_block_desc) + sizeof(struct ipr_mode_parm_hdr);
+   int newSize = sizeof(block_desc);
    printf("New size: %x", newSize);
    printf("Old size: %x", mode_select_data_len);
    fflush(stdout);
@@ -456,7 +456,7 @@ command!\n");
       close(sg_fd);
       exit(1);
    }
-
+   exit(0);
    /* Send FORMAT UNIT command */
    printf("Prepare command ...\n");
    fflush(stdout);
