@@ -452,6 +452,7 @@ command!\n");
    sghp->twelve_byte = 0;
    memcpy(scsi_buf + sizeof(struct sg_header), mode_select, 0x06);
    memcpy(scsi_buf + sizeof(struct sg_header) + 6, block_desc, 0x0C);
+
    /* new cdb logic*/
    uint8_t newSize = sizeof(struct sg_header) + sizeof(struct ipr_block_desc) + sizeof(struct ipr_mode_parm_hdr);
    uint8_t cdb[IPR_CCB_CDB_LEN];
@@ -480,26 +481,28 @@ command!\n");
    printf("scsi_buf:\n");
    print_buf(&io_hdr_t, sizeof(io_hdr_t));
    int rc = 0;
+
+   printf("New size: %x", newSize);
+   printf("Old size: %x", mode_select_data_len);
    /* end new cdb logic*/
 
    printf("   Done.\n");
    printf("Send MODE SELECT command ...\n");
 
-   printf("New size: %x", newSize);
-   printf("Old size: %x", mode_select_data_len);
    fflush(stdout);
    // old: write(sg_fd, scsi_buf, mode_select_data_len)
    // sizeof(struct ipr_block_desc) + sizeof(struct ipr_mode_parm_hdr)
-   rc = ioctl(sg_fd, SG_IO, &io_hdr_t);
+   // rc = ioctl(sg_fd, SG_IO, &io_hdr_t);
 
-   /*if (write(sg_fd, &io_hdr_t, sizeof(io_hdr_t)) < 0)
+   if (write(sg_fd, &io_hdr_t, mode_select_data_len) < 0)
    {
       fprintf(stderr, "   Write error\n\n");
       close(sg_fd);
       exit(1);
-   }*/
+   }
+
    /* Read status (sense_buffer) */
-   if (read(sg_fd, scsi_buf, sizeof(struct sg_io_hdr_ibm)) < 0)
+   if (read(sg_fd, scsi_buf, sizeof(struct sg_header)) < 0)
    {
       fprintf(stderr, "   Read error\n\n");
       close(sg_fd);
