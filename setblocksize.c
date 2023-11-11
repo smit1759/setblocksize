@@ -416,7 +416,7 @@ command!\n");
 
    mode_select[4] = sizeof(block_desc);
    memcpy(scsi_buf + sizeof(struct sg_header), mode_select, sizeof(mode_select));
-   memcpy(scsi_buf + sizeof(struct sg_header) + sizeof(mode_select) + 1, block_desc, sizeof(block_desc));
+   memcpy(scsi_buf + sizeof(struct sg_header) + sizeof(mode_select), block_desc, sizeof(block_desc));
 
    printf("   Done.\n");
    printf("Send MODE SELECT command ...\n");
