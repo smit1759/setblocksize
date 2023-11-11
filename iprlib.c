@@ -1521,7 +1521,7 @@ int parse_option(char *opt)
 {
 	if (strcmp(opt, "--version") == 0)
 	{
-		printf("%s: %s\n", tool_name, PACKAGE_VERSION);
+		printf("%s: %s\n", tool_name, "1");
 		exit(0);
 	}
 
@@ -3331,7 +3331,7 @@ int ipr_mode_select(int fd, void *buff, int length)
 
 	if (rc != 0)
 	{
-		printf("error issuing MODE SELECT")
+		printf("error issuing MODE SELECT");
 	}
 	close(fd);
 	return rc;
