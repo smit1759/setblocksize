@@ -85,6 +85,7 @@ To do:          -
 #define TIMEOUT (48000 * HZ) /* 800 minute FORMAT UNIT default timeout */
 #define BS 512               /* Default blocksize */
 #define IPR_CCB_CDB_LEN 16
+#define SG_DXFER_TO_DEV -2 /* e.g. a SCSI WRITE command */
 
 const char NAME[] = "setblocksize";
 const char VER[] = "V0.2";
@@ -108,6 +109,47 @@ struct ipr_mode_parm_hdr
    uint8_t device_spec_parms;
    uint8_t block_desc_len;
 };
+struct sense_data_t
+{
+   uint8_t error_code;
+   uint8_t segment_numb;
+   uint8_t sense_key;
+   uint8_t info[4];
+   uint8_t add_sense_len;
+   uint8_t cmd_spec_info[4];
+   uint8_t add_sense_code;
+   uint8_t add_sense_code_qual;
+   uint8_t field_rep_unit_code;
+   uint8_t sense_key_spec[3];
+   uint8_t add_sense_bytes[0];
+};
+
+typedef struct sg_io_hdr
+{
+   int interface_id;                 /* [i] 'S' for SCSI generic (required) */
+   int dxfer_direction;              /* [i] data transfer direction  */
+   unsigned char cmd_len;            /* [i] SCSI command length ( <= 16 bytes) */
+   unsigned char mx_sb_len;          /* [i] max length to write to sbp */
+   unsigned short int iovec_count;   /* [i] 0 implies no scatter gather */
+   unsigned int dxfer_len;           /* [i] byte count of data transfer */
+   void *dxferp;                     /* [i], [*io] points to data transfer memory
+                    or scatter gather list */
+   unsigned char *cmdp;              /* [i], [*i] points to command to perform */
+   unsigned char *sbp;               /* [i], [*o] points to sense_buffer memory */
+   unsigned int timeout;             /* [i] MAX_UINT->no timeout (unit: millisec) */
+   unsigned int flags;               /* [i] 0 -> default, see SG_FLAG... */
+   int pack_id;                      /* [i->o] unused internally (normally) */
+   void *usr_ptr;                    /* [i->o] unused internally */
+   unsigned char status;             /* [o] scsi status */
+   unsigned char masked_status;      /* [o] shifted, masked scsi status */
+   unsigned char msg_status;         /* [o] messaging level data (optional) */
+   unsigned char sb_len_wr;          /* [o] byte count actually written to sbp */
+   unsigned short int host_status;   /* [o] errors from host adapter */
+   unsigned short int driver_status; /* [o] errors from software driver */
+   int resid;                        /* [o] dxfer_len - actual_transferred */
+   unsigned int duration;            /* [o] time taken by cmd (unit: millisec) */
+   unsigned int info;                /* [o] auxiliary information */
+} sg_io_hdr_t;
 
 static void print_buf(const unsigned char *buf, size_t buf_len)
 {
@@ -412,15 +454,32 @@ command!\n");
    memcpy(scsi_buf + sizeof(struct sg_header), mode_select, 0x06);
    memcpy(scsi_buf + sizeof(struct sg_header) + 6, block_desc, 0x0C);
    /* new cdb logic*/
+   uint8_t newSize = sizeof(struct ipr_block_desc) + sizeof(struct ipr_mode_parm_hdr);
    uint8_t cdb[IPR_CCB_CDB_LEN];
    memset(cdb, 0, IPR_CCB_CDB_LEN);
    cdb[0] = MODE_SELECT;
    cdb[1] = 0x10; /* PF = 1, SP = 0 */
-   cdb[4] = sizeof(struct ipr_block_desc) + sizeof(struct ipr_mode_parm_hdr);
+   cdb[4] = newSize;
    printf("cdb:\n");
    print_buf(cdb, sizeof(cdb));
+   sg_io_hdr_t io_hdr_t;
+   struct sense_data_t sd;
+   int cdb_size[] = {6, 10, 10, 0, 16, 12, 16, 16};
+   io_hdr_t.interface_id = 'S';
+   io_hdr_t.cmd_len = cdb_size[(cdb[0] >> 5) & 0x7];
+   io_hdr_t.iovec_count = 0;
+   io_hdr_t.flags = 0;
+   io_hdr_t.pack_id = 0;
+   io_hdr_t.usr_ptr = 0;
+   io_hdr_t.sbp = (unsigned char *)&sd;
+   io_hdr_t.mx_sb_len = sizeof(struct sense_data_t);
+   io_hdr_t.timeout = TIMEOUT * 1000;
+   io_hdr_t.cmdp = cdb;
+   io_hdr_t.dxfer_direction = SG_DXFER_TO_DEV;
+   io_hdr_t.dxfer_len = newSize;
+   io_hdr_t.dxferp = ioctl_buffer;
    printf("scsi_buf:\n");
-   print_buf(scsi_buf, sizeof(scsi_buf));
+   print_buf(&io_hdr_t, sizeof(io_hdr_t));
    /* end new cdb logic*/
 
    printf("   Done.\n");
@@ -431,7 +490,7 @@ command!\n");
    fflush(stdout);
    // old: write(sg_fd, scsi_buf, mode_select_data_len)
    // sizeof(struct ipr_block_desc) + sizeof(struct ipr_mode_parm_hdr)
-   if (write(sg_fd, scsi_buf, mode_select_data_len) < 0)
+   if (write(sg_fd, &io_hdr_t, sizeof(io_hdr_t)) < 0)
    {
       fprintf(stderr, "   Write error\n\n");
       close(sg_fd);
