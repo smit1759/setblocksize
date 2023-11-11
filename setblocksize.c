@@ -84,6 +84,7 @@ To do:          -
 
 #define TIMEOUT (48000 * HZ) /* 800 minute FORMAT UNIT default timeout */
 #define BS 512               /* Default blocksize */
+#define IPR_CCB_CDB_LEN 16
 
 const char NAME[] = "setblocksize";
 const char VER[] = "V0.2";
@@ -108,6 +109,13 @@ struct ipr_mode_parm_hdr
    uint8_t block_desc_len;
 };
 
+static void print_buf(const unsigned char *buf, size_t buf_len)
+{
+   size_t i = 0;
+   for (i = 0; i < buf_len; ++i)
+      fprintf(stdout, "%02X%s", buf[i],
+              (i + 1) % 16 == 0 ? "\r\n" : " ");
+}
 int main(int argc, char **argv)
 {
    unsigned short int bs = BS;
@@ -403,6 +411,18 @@ command!\n");
    sghp->twelve_byte = 0;
    memcpy(scsi_buf + sizeof(struct sg_header), mode_select, 0x06);
    memcpy(scsi_buf + sizeof(struct sg_header) + 6, block_desc, 0x0C);
+   /* new cdb logic*/
+   uint8_t cdb[IPR_CCB_CDB_LEN];
+   memset(cdb, 0, IPR_CCB_CDB_LEN);
+   cdb[0] = MODE_SELECT;
+   cdb[1] = 0x10; /* PF = 1, SP = 0 */
+   cdb[4] = sizeof(struct ipr_block_desc) + sizeof(struct ipr_mode_parm_hdr);
+   printf("cdb:\n");
+   print_buf(cdb, sizeof(cdb));
+   printf("scsi_buf:\n");
+   print_buf(scsi_buf, sizeof(scsi_buf));
+   /* end new cdb logic*/
+
    printf("   Done.\n");
    printf("Send MODE SELECT command ...\n");
    int newSize = sizeof(block_desc);
