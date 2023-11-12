@@ -606,8 +606,8 @@ command!\n");
    printf("\n");
    rc = _sg_ioctl(sg_fd, cdb, ioctl_buffer, sizeof(ioctl_buffer), SG_DXFER_TO_DEV, &sense_data, TIMEOUT, 0);
    exit(0);
-   if (rc != 0)
-      printf("Sense error: %x", sense_data);
+   // if (rc != 0)
+   //    printf("Sense error: %x", sense_data);
    /*
    // copy to our buffer
    memcpy(scsi_buf + sizeof(struct sg_header), cdb, sizeof(cdb));
