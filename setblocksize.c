@@ -606,7 +606,11 @@ command!\n");
    printf("\n");
    rc = _sg_ioctl(sg_fd, cdb, ioctl_buffer, sizeof(struct ipr_block_desc) + sizeof(struct ipr_mode_parm_hdr), SG_DXFER_TO_DEV, &sense_data, 20, 0);
    if (rc != 0)
-      printf("Sense error: %x", sense_data);
+   {
+      printf("    Failed. RC: %d", rc);
+      printf("    Sense error: %s", sense_data.sense_key);
+      exit(1);
+   }
 
    // copy to our buffer
    memcpy(scsi_buf + sizeof(struct sg_header), cdb, sizeof(cdb));
