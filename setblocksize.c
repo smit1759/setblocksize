@@ -605,7 +605,7 @@ command!\n");
    print_buf(ioctl_buffer, sizeof(ioctl_buffer));
    printf("\n");
    rc = _sg_ioctl(sg_fd, cdb, ioctl_buffer, sizeof(ioctl_buffer), SG_DXFER_TO_DEV, &sense_data, TIMEOUT, 0);
-
+   exit(0);
    if (rc != 0)
       printf("Sense error: %x", sense_data);
    /*
