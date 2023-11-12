@@ -287,6 +287,14 @@ out:
    return rc;
 };
 
+static void print_buf(const unsigned char *buf, size_t buf_len)
+{
+   size_t i = 0;
+   for (i = 0; i < buf_len; ++i)
+      fprintf(stdout, "%02X%s", buf[i],
+              (i + 1) % 16 == 0 ? "\r\n" : " ");
+}
+
 int main(int argc, char **argv)
 {
    unsigned short int bs = BS;
@@ -574,7 +582,6 @@ command!\n");
    sghp->reply_len = sizeof(struct sg_header);
    sghp->pack_id = 0;
    sghp->twelve_byte = 0;
-   uint8_t sendBuffer[32];
    // prepare params
    int newSize = sizeof(struct ipr_block_desc) + sizeof(struct ipr_mode_parm_hdr);
    int rc;
@@ -593,7 +600,9 @@ command!\n");
    cdb[1] = 0x10; /* PF = 1, SP = 0 */
    cdb[4] = newSize;
    // prepare header
-
+   print_buf(cdb, sizeof(cdb));
+   print_buf(ioctl_buffer, sizeof(ioctl_buffer));
+   printf("\n");
    rc = _sg_ioctl(sg_fd, cdb, ioctl_buffer, sizeof(ioctl_buffer), SG_DXFER_TO_DEV, &sense_data, TIMEOUT, 0);
 
    if (rc != 0)
