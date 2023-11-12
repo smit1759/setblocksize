@@ -584,7 +584,7 @@ command!\n");
    sghp->pack_id = 0;
    sghp->twelve_byte = 0;
    // prepare params
-   int newSize = sizeof(struct ipr_block_desc) + sizeof(struct ipr_mode_parm_hdr);
+   unsigned long newSize = sizeof(struct ipr_block_desc) + sizeof(struct ipr_mode_parm_hdr);
    int rc;
    struct sense_data_t sense_data;
    mode_parm_hdr = (struct ipr_mode_parm_hdr *)ioctl_buffer;
@@ -604,7 +604,7 @@ command!\n");
    print_buf(cdb, sizeof(cdb));
    print_buf(ioctl_buffer, sizeof(ioctl_buffer));
    printf("\n");
-   rc = _sg_ioctl(sg_fd, cdb, ioctl_buffer, sizeof(ioctl_buffer), SG_DXFER_TO_DEV, &sense_data, 20, 0);
+   rc = _sg_ioctl(sg_fd, cdb, ioctl_buffer, sizeof(struct ipr_block_desc) + sizeof(struct ipr_mode_parm_hdr), SG_DXFER_TO_DEV, &sense_data, 20, 0);
    // if (rc != 0)
    //    printf("Sense error: %x", sense_data);
 
