@@ -609,7 +609,7 @@ command!\n");
    if (rc != 0)
    {
       printf("    Failed. RC: %d", rc);
-      printf("    Sense error: %s", sense_data.sense_key);
+      printf("    Sense error: %s", sense_data);
       exit(1);
    }
 
