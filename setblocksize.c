@@ -604,11 +604,10 @@ command!\n");
    print_buf(cdb, sizeof(cdb));
    print_buf(ioctl_buffer, sizeof(ioctl_buffer));
    printf("\n");
-   rc = _sg_ioctl(sg_fd, cdb, ioctl_buffer, sizeof(ioctl_buffer), SG_DXFER_TO_DEV, &sense_data, TIMEOUT, 0);
-   exit(0);
+   rc = _sg_ioctl(sg_fd, cdb, ioctl_buffer, sizeof(ioctl_buffer), SG_DXFER_TO_DEV, &sense_data, 20, 0);
    // if (rc != 0)
    //    printf("Sense error: %x", sense_data);
-   /*
+
    // copy to our buffer
    memcpy(scsi_buf + sizeof(struct sg_header), cdb, sizeof(cdb));
    memcpy(scsi_buf + sizeof(struct sg_header) + sizeof(cdb), ioctl_buffer, sizeof(ioctl_buffer));
@@ -620,6 +619,7 @@ command!\n");
    fflush(stdout);
    // old: write(sg_fd, scsi_buf, mode_select_data_len)
    // sizeof(struct ipr_block_desc) + sizeof(struct ipr_mode_parm_hdr)
+   /*
    if (write(sg_fd, scsi_buf, newSize) < 0)
    {
       fprintf(stderr, "   Write error\n\n");
