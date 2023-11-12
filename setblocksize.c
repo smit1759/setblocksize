@@ -608,8 +608,10 @@ command!\n");
    rc = _sg_ioctl(sg_fd, cdb, ioctl_buffer, newSize, SG_DXFER_TO_DEV, &sense_data, 20, 0);
    if (rc != 0)
    {
-      printf("    Failed. RC: %d", rc);
-      printf("    Sense error: %s", sense_data);
+      printf("    Failed. RC: %d\n", rc);
+      print_buf(&sense_data, sizeof(sense_data));
+      printf("\n");
+      // printf("    Sense error: %s", );
       exit(1);
    }
 
