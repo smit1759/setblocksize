@@ -584,7 +584,7 @@ command!\n");
    sghp->pack_id = 0;
    sghp->twelve_byte = 0;
    // prepare params
-   unsigned long newSize = sizeof(struct ipr_block_desc) + sizeof(struct ipr_mode_parm_hdr);
+   uint8_t newSize = sizeof(struct ipr_block_desc) + sizeof(struct ipr_mode_parm_hdr);
    int rc;
    struct sense_data_t sense_data;
    mode_parm_hdr = (struct ipr_mode_parm_hdr *)ioctl_buffer;
@@ -604,7 +604,8 @@ command!\n");
    print_buf(cdb, sizeof(cdb));
    print_buf(ioctl_buffer, sizeof(ioctl_buffer));
    printf("\n");
-   rc = _sg_ioctl(sg_fd, cdb, ioctl_buffer, sizeof(struct ipr_block_desc) + sizeof(struct ipr_mode_parm_hdr), SG_DXFER_TO_DEV, &sense_data, 20, 0);
+   printf("Send MODE SELECT command ...\n");
+   rc = _sg_ioctl(sg_fd, cdb, ioctl_buffer, newSize, SG_DXFER_TO_DEV, &sense_data, 20, 0);
    if (rc != 0)
    {
       printf("    Failed. RC: %d", rc);
@@ -613,13 +614,10 @@ command!\n");
    }
 
    // copy to our buffer
-   memcpy(scsi_buf + sizeof(struct sg_header), cdb, sizeof(cdb));
-   memcpy(scsi_buf + sizeof(struct sg_header) + sizeof(cdb), ioctl_buffer, sizeof(ioctl_buffer));
+   // memcpy(scsi_buf + sizeof(struct sg_header), cdb, sizeof(cdb));
+   // memcpy(scsi_buf + sizeof(struct sg_header) + sizeof(cdb), ioctl_buffer, sizeof(ioctl_buffer));
 
    printf("   Done.\n");
-   printf("Send MODE SELECT command ...\n");
-   printf("New size: %x\n", newSize);
-   printf("Old size: %x\n", mode_select_data_len);
    fflush(stdout);
    // old: write(sg_fd, scsi_buf, mode_select_data_len)
    // sizeof(struct ipr_block_desc) + sizeof(struct ipr_mode_parm_hdr)
@@ -638,7 +636,6 @@ command!\n");
       close(sg_fd);
       exit(1);
    }*/
-   printf("   Done.\n");
    /* Error processing */
    printf("Check status ...\n");
    fflush(stdout);
