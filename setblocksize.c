@@ -163,6 +163,14 @@ struct df_sense_data_t
    uint8_t add_sense_len;
 };
 
+static void print_buf(const unsigned char *buf, size_t buf_len)
+{
+   size_t i = 0;
+   for (i = 0; i < buf_len; ++i)
+      fprintf(stdout, "%02X%s", buf[i],
+              (i + 1) % 16 == 0 ? "\r\n" : " ");
+}
+
 static int _sg_ioctl(int fd, uint8_t cdb[IPR_CCB_CDB_LEN],
                      void *data, uint32_t xfer_len, uint32_t data_direction,
                      struct sense_data_t *sense_data,
@@ -287,14 +295,6 @@ out:
 
    return rc;
 };
-
-static void print_buf(const unsigned char *buf, size_t buf_len)
-{
-   size_t i = 0;
-   for (i = 0; i < buf_len; ++i)
-      fprintf(stdout, "%02X%s", buf[i],
-              (i + 1) % 16 == 0 ? "\r\n" : " ");
-}
 
 int main(int argc, char **argv)
 {
