@@ -605,8 +605,8 @@ command!\n");
    print_buf(ioctl_buffer, sizeof(ioctl_buffer));
    printf("\n");
    rc = _sg_ioctl(sg_fd, cdb, ioctl_buffer, sizeof(struct ipr_block_desc) + sizeof(struct ipr_mode_parm_hdr), SG_DXFER_TO_DEV, &sense_data, 20, 0);
-   // if (rc != 0)
-   //    printf("Sense error: %x", sense_data);
+   if (rc != 0)
+      printf("Sense error: %x", sense_data);
 
    // copy to our buffer
    memcpy(scsi_buf + sizeof(struct sg_header), cdb, sizeof(cdb));
@@ -627,13 +627,13 @@ command!\n");
       exit(1);
    }
    */
-   /* Read status (sense_buffer) */
+   /* Read status (sense_buffer)
    if (read(sg_fd, scsi_buf, sizeof(struct sg_header)) < 0)
    {
       fprintf(stderr, "   Read error\n\n");
       close(sg_fd);
       exit(1);
-   }
+   }*/
    printf("   Done.\n");
    /* Error processing */
    printf("Check status ...\n");
