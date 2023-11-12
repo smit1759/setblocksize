@@ -605,9 +605,10 @@ command!\n");
    print_buf(ioctl_buffer, sizeof(ioctl_buffer));
    printf("\n");
    printf("Send MODE SELECT command ...\n");
-   rc = _sg_ioctl(sg_fd, cdb, ioctl_buffer, newSize, SG_DXFER_TO_DEV, &sense_data, 20, 0);
+   rc = _sg_ioctl(sg_fd, cdb, &ioctl_buffer, newSize, SG_DXFER_TO_DEV, &sense_data, 20, 0);
    if (rc != 0)
    {
+      printf("\n");
       printf("    Failed. RC: %d\n", rc);
       print_buf(&sense_data, sizeof(sense_data));
       printf("\n");
