@@ -193,7 +193,11 @@ static int _sg_ioctl(int fd, uint8_t cdb[IPR_CCB_CDB_LEN],
    {
       memset(&io_hdr_t, 0, sizeof(io_hdr_t));
       memset(&sd, 0, sizeof(struct sense_data_t));
-
+      unsigned char mode_select[6] = {0x15, 0x10, 0x00, 0x00, 0x0C, 0x00};
+      /* FORMAT UNIT command */
+      unsigned char format_unit[6] = {0x04, 0x00, 0x00, 0x00, 0x00, 0x00};
+      /* Parameter list with block descriptor */
+      unsigned char para_list[12] = {0x00, 0x00, 0x00, 0x08, 0x00, 0x00};
       io_hdr_t.interface_id = 'S';
       io_hdr_t.cmd_len = cdb_size[(cdb[0] >> 5) & 0x7];
       io_hdr_t.iovec_count = iovec_count;
@@ -203,10 +207,10 @@ static int _sg_ioctl(int fd, uint8_t cdb[IPR_CCB_CDB_LEN],
       io_hdr_t.sbp = (unsigned char *)&sd;
       io_hdr_t.mx_sb_len = sizeof(struct sense_data_t);
       io_hdr_t.timeout = timeout_in_sec * 1000;
-      io_hdr_t.cmdp = &cdb;
+      io_hdr_t.cmdp = mode_select;
       io_hdr_t.dxfer_direction = data_direction;
       io_hdr_t.dxfer_len = xfer_len;
-      io_hdr_t.dxferp = &data;
+      io_hdr_t.dxferp = para_list;
       printf("Data: \n");
       print_buf(data, sizeof(data));
       printf("hdr: \n");
