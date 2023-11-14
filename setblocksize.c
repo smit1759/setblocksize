@@ -584,7 +584,7 @@ command!\n");
    printf("\n");
    printf("Send MODE SELECT command ...\n");
    printf("newSize: %d, ioctlBufferSize: %d\n", newSize, sizeof(ioctl_buffer));
-   rc = _sg_ioctl(sg_fd, cdb, ioctl_buffer, sizeof(ioctl_buffer), SG_DXFER_TO_DEV, &sense_data, 20, 0);
+   rc = _sg_ioctl(sg_fd, cdb, mode_parm_hdr, 6, SG_DXFER_TO_DEV, &sense_data, 20, 0);
    if (rc != 0)
    {
       printf("\n");
