@@ -133,9 +133,9 @@ typedef struct sg_io_hdr_ibm
    unsigned char mx_sb_len;          /* [i] max length to write to sbp */
    unsigned short int iovec_count;   /* [i] 0 implies no scatter gather */
    unsigned int dxfer_len;           /* [i] byte count of data transfer */
-   unsigned char dxferp;             /* [i], [*io] points to data transfer memory
-            or scatter gather list */
-   unsigned char cmdp;               /* [i], [*i] points to command to perform */
+   void *dxferp;                     /* [i], [*io] points to data transfer memory
+                    or scatter gather list */
+   unsigned char *cmdp;              /* [i], [*i] points to command to perform */
    unsigned char *sbp;               /* [i], [*o] points to sense_buffer memory */
    unsigned int timeout;             /* [i] MAX_UINT->no timeout (unit: millisec) */
    unsigned int flags;               /* [i] 0 -> default, see SG_FLAG... */
@@ -207,10 +207,10 @@ static int _sg_ioctl(int fd, uint8_t cdb[IPR_CCB_CDB_LEN],
       io_hdr_t.sbp = (unsigned char *)&sd;
       io_hdr_t.mx_sb_len = sizeof(struct sense_data_t);
       io_hdr_t.timeout = timeout_in_sec * 1000;
-      io_hdr_t.cmdp = mode_select;
+      io_hdr_t.cmdp = &mode_select;
       io_hdr_t.dxfer_direction = data_direction;
       io_hdr_t.dxfer_len = xfer_len;
-      io_hdr_t.dxferp = para_list;
+      io_hdr_t.dxferp = &para_list;
       printf("Data: \n");
       print_buf(data, sizeof(data));
       printf("hdr: \n");
