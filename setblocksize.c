@@ -569,6 +569,7 @@ command!\n");
    block_desc->block_length[0] = 0x00;
    block_desc->block_length[1] = bs >> 8;
    block_desc->block_length[2] = bs & 0xff;
+   print_buf(mode_parm_hdr, sizeof(mode_parm_hdr));
    // prepare cdb
    uint8_t cdb[IPR_CCB_CDB_LEN];
    memset(cdb, 0, IPR_CCB_CDB_LEN);
