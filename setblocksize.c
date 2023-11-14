@@ -576,11 +576,9 @@ command!\n");
    cdb[1] = 0x10; /* PF = 1, SP = 0 */
    cdb[4] = newSize;
    // prepare header
-   print_buf(cdb, sizeof(cdb));
-   print_buf(ioctl_buffer, sizeof(ioctl_buffer));
    printf("\n");
    printf("Send MODE SELECT command ...\n");
-   rc = _sg_ioctl(sg_fd, cdb, &ioctl_buffer, newSize, SG_DXFER_TO_DEV, &sense_data, 20, 0);
+   rc = _sg_ioctl(sg_fd, cdb, &ioctl_buffer, newSize, SG_DXFER_TO_DEV, &sense_data, 20, 1);
    if (rc != 0)
    {
       printf("\n");
