@@ -133,9 +133,9 @@ typedef struct sg_io_hdr_ibm
    unsigned char mx_sb_len;          /* [i] max length to write to sbp */
    unsigned short int iovec_count;   /* [i] 0 implies no scatter gather */
    unsigned int dxfer_len;           /* [i] byte count of data transfer */
-   void *dxferp;                     /* [i], [*io] points to data transfer memory
-                    or scatter gather list */
-   unsigned char *cmdp;              /* [i], [*i] points to command to perform */
+   unsigned char dxferp;             /* [i], [*io] points to data transfer memory
+            or scatter gather list */
+   unsigned char cmdp;               /* [i], [*i] points to command to perform */
    unsigned char *sbp;               /* [i], [*o] points to sense_buffer memory */
    unsigned int timeout;             /* [i] MAX_UINT->no timeout (unit: millisec) */
    unsigned int flags;               /* [i] 0 -> default, see SG_FLAG... */
@@ -177,7 +177,7 @@ static int _sg_ioctl(int fd, uint8_t cdb[IPR_CCB_CDB_LEN],
                      uint32_t timeout_in_sec, int retries)
 {
    int rc = 0;
-   sg_io_hdr_t io_hdr_t;
+   sg_io_hdr_t_ibm io_hdr_t;
    sg_iovec_t *iovec = NULL;
    int iovec_count = 0;
    int i;
