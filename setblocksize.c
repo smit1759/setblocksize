@@ -209,6 +209,7 @@ static int _sg_ioctl(int fd, uint8_t cdb[IPR_CCB_CDB_LEN],
       io_hdr_t.dxferp = data;
       print_buf(data, sizeof(data));
       printf("\n");
+      printf("\n");
       print_buf(&io_hdr_t, sizeof(io_hdr_t));
 
       rc = ioctl(fd, SG_IO, &io_hdr_t);
