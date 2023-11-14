@@ -133,8 +133,8 @@ typedef struct sg_io_hdr_ibm
    unsigned char mx_sb_len;          /* [i] max length to write to sbp */
    unsigned short int iovec_count;   /* [i] 0 implies no scatter gather */
    unsigned int dxfer_len;           /* [i] byte count of data transfer */
-   unsigned char dxfer;              /* [i], [*io] points to data transfer memory
-             or scatter gather list */
+   unsigned char dxferp;             /* [i], [*io] points to data transfer memory
+            or scatter gather list */
    unsigned char cmdp;               /* [i], [*i] points to command to perform */
    unsigned char *sbp;               /* [i], [*o] points to sense_buffer memory */
    unsigned int timeout;             /* [i] MAX_UINT->no timeout (unit: millisec) */
