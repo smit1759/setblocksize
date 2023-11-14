@@ -171,7 +171,9 @@ static void print_buf(const unsigned char *buf, size_t buf_len)
               (i + 1) % 16 == 0 ? "\r\n" : " ");
 }
 
-static int _sg_ioctl(int fd, uint8_t cdb[IPR_CCB_CDB_LEN], void *data, uint32_t xfer_len, uint32_t data_direction, struct sense_data_t *sense_data,
+static int _sg_ioctl(int fd, uint8_t cdb[IPR_CCB_CDB_LEN],
+                     void *data, uint32_t xfer_len, uint32_t data_direction,
+                     struct sense_data_t *sense_data,
                      uint32_t timeout_in_sec, int retries)
 {
    int rc = 0;
@@ -184,6 +186,8 @@ static int _sg_ioctl(int fd, uint8_t cdb[IPR_CCB_CDB_LEN], void *data, uint32_t 
    uint8_t *buf;
    struct sense_data_t sd;
    struct df_sense_data_t *dfsdp = NULL;
+
+   iovec_count = 0;
 
    for (i = 0; i < (retries + 1); i++)
    {
@@ -199,10 +203,10 @@ static int _sg_ioctl(int fd, uint8_t cdb[IPR_CCB_CDB_LEN], void *data, uint32_t 
       io_hdr_t.sbp = (unsigned char *)&sd;
       io_hdr_t.mx_sb_len = sizeof(struct sense_data_t);
       io_hdr_t.timeout = timeout_in_sec * 1000;
-      io_hdr_t.cmdp = cdb;
+      io_hdr_t.cmdp = &cdb;
       io_hdr_t.dxfer_direction = data_direction;
       io_hdr_t.dxfer_len = xfer_len;
-      io_hdr_t.dxferp = data;
+      io_hdr_t.dxferp = &data;
       print_buf(&io_hdr_t, sizeof(io_hdr_t));
 
       rc = ioctl(fd, SG_IO, &io_hdr_t);
