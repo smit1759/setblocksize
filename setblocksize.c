@@ -580,7 +580,7 @@ command!\n");
    // prepare header
    printf("\n");
    printf("Send MODE SELECT command ...\n");
-   rc = _sg_ioctl(sg_fd, cdb, &ioctl_buffer, newSize, SG_DXFER_TO_DEV, &sense_data, 20, 1);
+   rc = _sg_ioctl(sg_fd, cdb, &ioctl_buffer, newSize, SG_DXFER_TO_DEV, &sense_data, 20, 0);
    if (rc != 0)
    {
       printf("\n");
