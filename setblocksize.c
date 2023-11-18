@@ -592,7 +592,7 @@ command!\n");
    int rc;
    struct sense_data_t sense_data;
    uint8_t ioctl_buffer[12];
-   uint8_t sg_buffer[18];
+   uint8_t sg_buffer[20];
    mode_parm_hdr = (struct ipr_mode_parm_hdr *)ioctl_buffer;
    memset(ioctl_buffer, 0, 12);
    mode_parm_hdr->block_desc_len = sizeof(struct ipr_block_desc);
