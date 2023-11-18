@@ -607,9 +607,7 @@ command!\n");
    printf("Block Descriptor: \n");
    print_buf(block_desc, sizeof(block_desc));
    printf("\n");
-   printf("IOCTL Buffer: \n");
-   print_buf(&ioctl_buffer, sizeof(ioctl_buffer));
-   printf("\n");
+
    // prepare cdb
    uint8_t cdb[IPR_CCB_CDB_LEN];
    memset(cdb, 0, IPR_CCB_CDB_LEN);
@@ -618,7 +616,10 @@ command!\n");
    cdb[4] = newSize;
    memcpy(sg_buffer, cdb, sizeof(cdb));
    memcpy(sg_buffer + sizeof(cdb), ioctl_buffer, sizeof(ioctl_buffer));
-   if (write(sg_fd, sg_buffer, (sizeof(sg_buffer))) < 0)
+   printf("IOCTL Buffer: \n");
+   print_buf(sg_buffer, sizeof(sg_buffer));
+   printf("\n");
+   if (write(sg_fd, sg_buffer, sizeof(sg_buffer)) < 0)
    {
       fprintf(stderr, "   Write error\n\n");
       close(sg_fd);
