@@ -619,7 +619,7 @@ command!\n");
    printf("IOCTL Buffer: \n");
    print_buf(sg_buffer, sizeof(sg_buffer));
    printf("\n");
-   if (write(sg_fd, sg_buffer, 12) < 0)
+   if (write(sg_fd, sg_buffer, 16) < 0)
    {
       fprintf(stderr, "   Write error\n\n");
       close(sg_fd);
