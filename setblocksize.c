@@ -108,17 +108,10 @@ To do:          -
 #define scsi_warn(dev, fmt, ...) \
    scsi_log(LOG_WARNING, dev, fmt)
 
-#define scsi_cmd_err(dev, sense, cmd, rc)                                      \
-   do                                                                          \
-   {                                                                           \
-      if ((((sense)->error_code & 0x7F) != 0x70) ||                            \
-          (((sense)->sense_key & 0x0F) != 0x05))                               \
-      {                                                                        \
-         scsi_err("dev", "%s failed. rc=%d, SK: %X ASC: %X ASCQ: %X\n",        \
-                  cmd, rc, (sense)->sense_key & 0x0f, (sense)->add_sense_code, \
-                  (sense)->add_sense_code_qual);                               \
-      }                                                                        \
-   } while (0)
+#define scsi_cmd_err(dev, sense, cmd, rc)                                \
+   scsi_err("dev", "%s failed. rc=%d, SK: %X ASC: %X ASCQ: %X\n",        \
+            cmd, rc, (sense)->sense_key & 0x0f, (sense)->add_sense_code, \
+            (sense)->add_sense_code_qual);
 
 const char NAME[] = "setblocksize";
 const char VER[] = "V0.2";
