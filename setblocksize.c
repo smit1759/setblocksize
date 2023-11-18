@@ -87,6 +87,10 @@ To do:          -
 #define IPR_CCB_CDB_LEN 6
 #define IPR_MAX_XFER 0x8000
 #define IPR_S_G_BUFF_ALIGNMENT 512
+#define IPR_DEFECT_LIST_HDR_LEN 4
+#define FORMAT_UNIT 0x04
+#define IPR_FORMAT_DATA 0x10
+#define IPR_FORMAT_IMMED 2
 const char NAME[] = "setblocksize";
 const char VER[] = "V0.2";
 const int cdb_size[] = {6, 10, 10, 0, 16, 12, 16, 16};
@@ -705,7 +709,17 @@ command!\n");
    sghp->pack_id = 0;
    sghp->twelve_byte = 0;
    memcpy(scsi_buf + sizeof(struct sg_header), format_unit, 0x06);
+   uint8_t cdb1[6];
+   uint8_t *defect_list_hdr;
+   struct sense_data_t sense_data1;
+   int length = IPR_DEFECT_LIST_HDR_LEN;
+   memset(cdb, 0, IPR_CCB_CDB_LEN);
+   defect_list_hdr = calloc(1, IPR_DEFECT_LIST_HDR_LEN);
+   cdb[0] = FORMAT_UNIT;
+   cdb[1] = IPR_FORMAT_DATA;              /* lun = 0, fmtdata = 1, cmplst = 0, defect list format = 0 */
+   defect_list_hdr[1] = IPR_FORMAT_IMMED; /* FOV = 0, DPRY = 0, DCRT = 0, STPF = 0, IP = 0, DSP = 0, Immed = 1, VS = 0 */
    buf = timeout;
+
    if (ioctl(sg_fd, SG_SET_TIMEOUT, &buf) < 0)
    {
       fprintf(stderr, "   Error!\n");
@@ -713,6 +727,21 @@ command!\n");
       close(sg_fd);
       exit(1);
    }
+   rc = sg_ioctl(sg_fd, cdb1, defect_list_hdr,
+                 length, SG_DXFER_TO_DEV,
+                 &sense_data1, 120);
+
+   free(defect_list_hdr);
+   if (rc != 0)
+   {
+      printf("\n");
+      printf("    Failed. RC: %d\n", rc);
+      print_buf(&sense_data1, sizeof(sense_data1));
+      printf("\n");
+      // printf("    Sense error: %s", );
+      exit(1);
+   }
+   /*
    printf("   Done.\n");
    printf("Send FORMAT UNIT command ...\n");
    fflush(stdout);
@@ -722,7 +751,7 @@ command!\n");
       close(sg_fd);
       exit(1);
    }
-   /* Read status (sense_buffer) and data */
+
    printf("   *** Please wait - Do not manually interrupt or power down! ***\n");
    if (read(sg_fd, scsi_buf, sizeof(struct sg_header)) < 0)
    {
@@ -731,6 +760,7 @@ command!\n");
       exit(1);
    }
    printf("   Done.\n");
+   */
    /* Error processing */
    printf("Check status ... \n");
    if (sghp->pack_id != 0) /* This shouldn't happen */
