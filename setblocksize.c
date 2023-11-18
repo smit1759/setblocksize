@@ -727,9 +727,9 @@ command!\n");
       close(sg_fd);
       exit(1);
    }
-   rc = sg_ioctl(sg_fd, cdb1, defect_list_hdr,
-                 length, SG_DXFER_TO_DEV,
-                 &sense_data1, 120);
+   rc = _sg_ioctl(sg_fd, cdb1, defect_list_hdr,
+                  length, SG_DXFER_TO_DEV,
+                  &sense_data1, 120, 0);
 
    free(defect_list_hdr);
    if (rc != 0)
