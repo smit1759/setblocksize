@@ -590,27 +590,28 @@ command!\n");
    uint8_t newSize = sizeof(struct ipr_block_desc) + sizeof(struct ipr_mode_parm_hdr);
    int rc;
    struct sense_data_t sense_data;
-
    mode_parm_hdr = (struct ipr_mode_parm_hdr *)ioctl_buffer;
-
    memset(ioctl_buffer, 0, 255);
    mode_parm_hdr->block_desc_len = sizeof(struct ipr_block_desc);
    block_desc = (struct ipr_block_desc *)(mode_parm_hdr + 1);
    block_desc->block_length[0] = 0x00;
    block_desc->block_length[1] = bs >> 8;
    block_desc->block_length[2] = bs & 0xff;
+   printf("Params: \n");
    print_buf(mode_parm_hdr, sizeof(mode_parm_hdr));
+   printf("\n");
    // prepare cdb
    uint8_t cdb[IPR_CCB_CDB_LEN];
    memset(cdb, 0, IPR_CCB_CDB_LEN);
    cdb[0] = MODE_SELECT;
    cdb[1] = 0x10; /* PF = 1, SP = 0 */
    cdb[4] = newSize;
-   // prepare header
+   printf("CDB: \n");
+   print_buf(cdb, sizeof(cdb));
    printf("\n");
+   // prepare header
    printf("Send MODE SELECT command ...\n");
-   printf("newSize: %d, ioctlBufferSize: %d\n", sizeof(struct ipr_block_desc) + sizeof(struct ipr_mode_parm_hdr), sizeof(ioctl_buffer));
-
+   // printf("newSize: %d, ioctlBufferSize: %d\n", sizeof(struct ipr_block_desc) + sizeof(struct ipr_mode_parm_hdr), sizeof(ioctl_buffer));
    rc = _sg_ioctl(sg_fd, cdb, ioctl_buffer, newSize, SG_DXFER_TO_DEV, &sense_data, 30, 0);
    if (rc != 0)
    {
