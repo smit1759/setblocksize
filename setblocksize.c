@@ -312,7 +312,6 @@ int main(int argc, char **argv)
    char sbuf[256];
    char *file_name = NULL;
    unsigned char scsi_buf[65536];
-   uint8_t ioctl_buffer[512];
    struct ipr_mode_parm_hdr *mode_parm_hdr;
    struct ipr_block_desc *block_desc;
    struct sg_header *sghp = (struct sg_header *)scsi_buf;
@@ -592,8 +591,10 @@ command!\n");
    uint8_t newSize = sizeof(struct ipr_block_desc) + sizeof(struct ipr_mode_parm_hdr);
    int rc;
    struct sense_data_t sense_data;
+   uint8_t ioctl_buffer[12];
+   uint8_t sg_buffer[18];
    mode_parm_hdr = (struct ipr_mode_parm_hdr *)ioctl_buffer;
-   memset(ioctl_buffer, 0, 255);
+   memset(ioctl_buffer, 0, 12);
    mode_parm_hdr->block_desc_len = sizeof(struct ipr_block_desc);
    block_desc = (struct ipr_block_desc *)(mode_parm_hdr + 1);
    block_desc->block_length[0] = 0x00;
@@ -615,14 +616,21 @@ command!\n");
    cdb[0] = MODE_SELECT;
    cdb[1] = 0x10; /* PF = 1, SP = 0 */
    cdb[4] = newSize;
-
-   printf("CDB: \n");
+   memcpy(sg_buffer, cdb, sizeof(cdb));
+   memcpy(sg_buffer + sizeof(cdb), ioctl_buffer, sizeof(ioctl_buffer));
+   if (write(sg_fd, sg_buffer, (sizeof(sg_buffer))) < 0)
+   {
+      fprintf(stderr, "   Write error\n\n");
+      close(sg_fd);
+      exit(1);
+   }
+   /*printf("CDB: \n");
    print_buf(cdb, sizeof(cdb));
    printf("\n");
    // prepare header
    printf("Send MODE SELECT command ...\n");
    // printf("newSize: %d, ioctlBufferSize: %d\n", sizeof(struct ipr_block_desc) + sizeof(struct ipr_mode_parm_hdr), sizeof(ioctl_buffer));
-   rc = _sg_ioctl(sg_fd, &cdb, &ioctl_buffer, newSize, SG_DXFER_TO_DEV, &sense_data, 30, 0);
+   rc = _sg_ioctl(sg_fd, cdb, ioctl_buffer, newSize, SG_DXFER_TO_DEV, &sense_data, 30, 0);
    if (rc != 0)
    {
       printf("\n");
@@ -632,7 +640,7 @@ command!\n");
       // printf("    Sense error: %s", );
       exit(1);
    }
-
+   */
    // copy to our buffer
    // memcpy(scsi_buf + sizeof(struct sg_header), cdb, sizeof(cdb));
    // memcpy(scsi_buf + sizeof(struct sg_header) + sizeof(cdb), ioctl_buffer, sizeof(ioctl_buffer));
