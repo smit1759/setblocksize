@@ -625,20 +625,20 @@ command!\n");
    printf("\n");
    uint8_t command[] = {0x15, 0x10, 0x00, 0x00, 0x0C, 0x00, 0x00, 0x00, 0x00, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x00};
    printf("Send MODE SELECT command ...\n");
-   if (write(sg_fd, ioctl_buffer, mode_select_data_len) < 0)
-   {
-      fprintf(stderr, "   Write error\n\n");
-      close(sg_fd);
-      exit(1);
-   }
+   // if (write(sg_fd, ioctl_buffer, mode_select_data_len) < 0)
+   //{
+   //    fprintf(stderr, "   Write error\n\n");
+   //   close(sg_fd);
+   //    exit(1);
+   // }
 
-   /*printf("CDB: \n");
-   print_buf(cdb, sizeof(cdb));
-   printf("\n");
-   // prepare header
+   // printf("CDB: \n");
+   // print_buf(cdb, sizeof(cdb));
+   // printf("\n");
+   //  prepare header
 
    // printf("newSize: %d, ioctlBufferSize: %d\n", sizeof(struct ipr_block_desc) + sizeof(struct ipr_mode_parm_hdr), sizeof(ioctl_buffer));
-   rc = _sg_ioctl(sg_fd, cdb, ioctl_buffer, newSize, SG_DXFER_TO_DEV, &sense_data, 30, 0);
+   rc = _sg_ioctl(sg_fd, &cdb, &ioctl_buffer, newSize, SG_DXFER_TO_DEV, &sense_data, 30, 0);
    if (rc != 0)
    {
       printf("\n");
@@ -648,7 +648,6 @@ command!\n");
       // printf("    Sense error: %s", );
       exit(1);
    }
-   */
    // copy to our buffer
    // memcpy(scsi_buf + sizeof(struct sg_header), cdb, sizeof(cdb));
    // memcpy(scsi_buf + sizeof(struct sg_header) + sizeof(cdb), ioctl_buffer, sizeof(ioctl_buffer));
