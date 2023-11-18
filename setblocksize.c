@@ -599,11 +599,15 @@ command!\n");
    block_desc->block_length[0] = 0x00;
    block_desc->block_length[1] = bs >> 8;
    block_desc->block_length[2] = bs & 0xff;
+   memcpy(ioctl_buffer + sizeof(struct ipr_mode_parm_hdr), block_desc, sizeof(block_desc));
    printf("Params: \n");
    print_buf(mode_parm_hdr, sizeof(mode_parm_hdr));
    printf("\n");
    printf("Block Descriptor: \n");
    print_buf(block_desc, sizeof(block_desc));
+   printf("\n");
+   printf("IOCTL Buffer: \n");
+   print_buf(&ioctl_buffer, sizeof(ioctl_buffer));
    printf("\n");
    // prepare cdb
    uint8_t cdb[IPR_CCB_CDB_LEN];
@@ -611,6 +615,7 @@ command!\n");
    cdb[0] = MODE_SELECT;
    cdb[1] = 0x10; /* PF = 1, SP = 0 */
    cdb[4] = newSize;
+
    printf("CDB: \n");
    print_buf(cdb, sizeof(cdb));
    printf("\n");
