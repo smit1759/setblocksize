@@ -75,7 +75,7 @@ To do:          -
 #include <scsi/sg.h>
 #include "include/sg_err.h"
 #include <stdint.h>
-
+#include <linux/types.h>
 /*
 ********************************************************************************
 * Global constants
@@ -188,16 +188,40 @@ static int _sg_ioctl(int fd, uint8_t cdb[IPR_CCB_CDB_LEN],
    struct df_sense_data_t *dfsdp = NULL;
 
    iovec_count = 0;
+   /* check if scatter gather should be used */
+   if (xfer_len > IPR_MAX_XFER)
+   {
+      iovec_count = (xfer_len / IPR_MAX_XFER) + 1;
+      iovec = malloc(iovec_count * sizeof(sg_iovec_t));
+
+      buff_len = xfer_len;
+      segment_size = IPR_MAX_XFER;
+
+      for (i = 0; (i < iovec_count) && (buff_len != 0); i++)
+      {
+         posix_memalign(&(iovec[i].iov_base), IPR_S_G_BUFF_ALIGNMENT, segment_size);
+         if (data_direction == SG_DXFER_TO_DEV)
+            memcpy(iovec[i].iov_base, data + (IPR_MAX_XFER * i), segment_size);
+         iovec[i].iov_len = segment_size;
+
+         buff_len -= segment_size;
+         if (buff_len < segment_size)
+            segment_size = buff_len;
+      }
+
+      iovec_count = i;
+      dxferp = (void *)iovec;
+   }
+   else
+   {
+      iovec_count = 0;
+      dxferp = data;
+   }
 
    for (i = 0; i < (retries + 1); i++)
    {
       memset(&io_hdr_t, 0, sizeof(io_hdr_t));
       memset(&sd, 0, sizeof(struct sense_data_t));
-      unsigned char mode_select[6] = {0x15, 0x10, 0x00, 0x00, 0x0C, 0x00};
-      /* FORMAT UNIT command */
-      unsigned char format_unit[6] = {0x04, 0x00, 0x00, 0x00, 0x00, 0x00};
-      /* Parameter list with block descriptor */
-      unsigned char para_list[12] = {0x00, 0x00, 0x00, 0x08, 0x00, 0x00};
       io_hdr_t.interface_id = 'S';
       io_hdr_t.cmd_len = cdb_size[(cdb[0] >> 5) & 0x7];
       io_hdr_t.iovec_count = iovec_count;
@@ -207,10 +231,10 @@ static int _sg_ioctl(int fd, uint8_t cdb[IPR_CCB_CDB_LEN],
       io_hdr_t.sbp = (unsigned char *)&sd;
       io_hdr_t.mx_sb_len = sizeof(struct sense_data_t);
       io_hdr_t.timeout = timeout_in_sec * 1000;
-      io_hdr_t.cmdp = &mode_select;
+      io_hdr_t.cmdp = cdb;
       io_hdr_t.dxfer_direction = data_direction;
       io_hdr_t.dxfer_len = xfer_len;
-      io_hdr_t.dxferp = &para_list;
+      io_hdr_t.dxferp = data;
       printf("Data: \n");
       print_buf(data, sizeof(data));
       printf("hdr: \n");
@@ -566,7 +590,9 @@ command!\n");
    uint8_t newSize = sizeof(struct ipr_block_desc) + sizeof(struct ipr_mode_parm_hdr);
    int rc;
    struct sense_data_t sense_data;
+
    mode_parm_hdr = (struct ipr_mode_parm_hdr *)ioctl_buffer;
+
    memset(ioctl_buffer, 0, 255);
    mode_parm_hdr->block_desc_len = sizeof(struct ipr_block_desc);
    block_desc = (struct ipr_block_desc *)(mode_parm_hdr + 1);
@@ -583,8 +609,9 @@ command!\n");
    // prepare header
    printf("\n");
    printf("Send MODE SELECT command ...\n");
-   printf("newSize: %d, ioctlBufferSize: %d\n", newSize, sizeof(ioctl_buffer));
-   rc = _sg_ioctl(sg_fd, cdb, mode_parm_hdr, sizeof(mode_parm_hdr) + sizeof(cdb), SG_DXFER_TO_DEV, &sense_data, 20, 0);
+   printf("newSize: %d, ioctlBufferSize: %d\n", sizeof(struct ipr_block_desc) + sizeof(struct ipr_mode_parm_hdr), sizeof(ioctl_buffer));
+
+   rc = _sg_ioctl(sg_fd, cdb, ioctl_buffer, newSize, SG_DXFER_TO_DEV, &sense_data, 30, 0);
    if (rc != 0)
    {
       printf("\n");
