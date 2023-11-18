@@ -619,7 +619,7 @@ command!\n");
    cdb[1] = 0x10; /* PF = 1, SP = 0 */
    cdb[4] = newSize;
    memcpy(sg_buffer, cdb, sizeof(cdb));
-   memcpy(sg_buffer + sizeof(cdb), ioctl_buffer, sizeof(ioctl_buffer));
+   memcpy(sg_buffer + sizeof(cdb) + 1, ioctl_buffer, sizeof(ioctl_buffer));
    printf("IOCTL Buffer: \n");
    print_buf(sg_buffer, sizeof(sg_buffer));
    printf("\n");
