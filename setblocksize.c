@@ -220,6 +220,9 @@ static int _sg_ioctl(int fd, uint8_t cdb[IPR_CCB_CDB_LEN],
 
    for (i = 0; i < (retries + 1); i++)
    {
+      printf("Data param: \n");
+      print_buf(data, sizeof(data));
+      printf("\n");
       memset(&io_hdr_t, 0, sizeof(io_hdr_t));
       memset(&sd, 0, sizeof(struct sense_data_t));
       io_hdr_t.interface_id = 'S';
