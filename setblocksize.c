@@ -620,7 +620,7 @@ command!\n");
    print_buf(sg_buffer, sizeof(sg_buffer));
    printf("\n");
    uint8_t command[] = {0x15, 0x10, 0x00, 0x00, 0x0C, 0x00, 0x00, 0x00, 0x00, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x00};
-   if (write(sg_fd, command, sizeof(command)) < 0)
+   if (write(sg_fd, ioctl_buffer, mode_select_data_len) < 0)
    {
       fprintf(stderr, "   Write error\n\n");
       close(sg_fd);
