@@ -617,14 +617,14 @@ command!\n");
    memset(cdb, 0, IPR_CCB_CDB_LEN);
    cdb[0] = MODE_SELECT;
    cdb[1] = 0x10; /* PF = 1, SP = 0 */
-   cdb[4] = newSize;
+   cdb[4] = 0x0C;
    memset(sg_buffer, 0, sizeof(sg_buffer));
    memcpy(sg_buffer, cdb, sizeof(cdb));
    memcpy(sg_buffer + sizeof(cdb), ioctl_buffer, sizeof(ioctl_buffer));
    printf("IOCTL Buffer: \n");
    print_buf(sg_buffer, sizeof(sg_buffer));
    printf("\n");
-   uint8_t command[] = {0x15, 0x10, 0x00, 0x00, 0x0C, 0x00, 0x00, 0x00, 0x00, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x00};
+   uint8_t command[] = {0x00, 0x00, 0x00, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x00};
    printf("Send MODE SELECT command ...\n");
    // if (write(sg_fd, ioctl_buffer, mode_select_data_len) < 0)
    //{
@@ -639,7 +639,7 @@ command!\n");
    //  prepare header
 
    // printf("newSize: %d, ioctlBufferSize: %d\n", sizeof(struct ipr_block_desc) + sizeof(struct ipr_mode_parm_hdr), sizeof(ioctl_buffer));
-   rc = _sg_ioctl(sg_fd, &cdb, &ioctl_buffer, newSize, SG_DXFER_TO_DEV, &sense_data, 30, 0);
+   rc = _sg_ioctl(sg_fd, &cdb, &command, 0x0C, SG_DXFER_TO_DEV, &sense_data, 30, 0);
    if (rc != 0)
    {
       printf("\n");
