@@ -624,17 +624,19 @@ command!\n");
    print_buf(sg_buffer, sizeof(sg_buffer));
    printf("\n");
    uint8_t command[] = {0x15, 0x10, 0x00, 0x00, 0x0C, 0x00, 0x00, 0x00, 0x00, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x00};
+   printf("Send MODE SELECT command ...\n");
    if (write(sg_fd, ioctl_buffer, mode_select_data_len) < 0)
    {
       fprintf(stderr, "   Write error\n\n");
       close(sg_fd);
       exit(1);
    }
+
    /*printf("CDB: \n");
    print_buf(cdb, sizeof(cdb));
    printf("\n");
    // prepare header
-   printf("Send MODE SELECT command ...\n");
+
    // printf("newSize: %d, ioctlBufferSize: %d\n", sizeof(struct ipr_block_desc) + sizeof(struct ipr_mode_parm_hdr), sizeof(ioctl_buffer));
    rc = _sg_ioctl(sg_fd, cdb, ioctl_buffer, newSize, SG_DXFER_TO_DEV, &sense_data, 30, 0);
    if (rc != 0)
@@ -719,7 +721,7 @@ command!\n");
    cdb[1] = IPR_FORMAT_DATA;              /* lun = 0, fmtdata = 1, cmplst = 0, defect list format = 0 */
    defect_list_hdr[1] = IPR_FORMAT_IMMED; /* FOV = 0, DPRY = 0, DCRT = 0, STPF = 0, IP = 0, DSP = 0, Immed = 1, VS = 0 */
    buf = timeout;
-
+   printf("Send set timeout command ...\n");
    if (ioctl(sg_fd, SG_SET_TIMEOUT, &buf) < 0)
    {
       fprintf(stderr, "   Error!\n");
@@ -727,6 +729,7 @@ command!\n");
       close(sg_fd);
       exit(1);
    }
+   printf("Send FORMAT UNIT command ...\n");
    rc = _sg_ioctl(sg_fd, cdb1, defect_list_hdr,
                   length, SG_DXFER_TO_DEV,
                   &sense_data1, 120, 0);
