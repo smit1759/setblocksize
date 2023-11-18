@@ -619,7 +619,8 @@ command!\n");
    printf("IOCTL Buffer: \n");
    print_buf(sg_buffer, sizeof(sg_buffer));
    printf("\n");
-   if (write(sg_fd, sg_buffer, 16) < 0)
+   uint8_t command[] = {0x15, 0x10, 0x00, 0x00, 0x0C, 0x00, 0x00, 0x00, 0x00, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x00};
+   if (write(sg_fd, command, sizeof(command)) < 0)
    {
       fprintf(stderr, "   Write error\n\n");
       close(sg_fd);
