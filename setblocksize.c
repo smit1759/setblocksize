@@ -84,7 +84,7 @@ To do:          -
 
 #define TIMEOUT (48000 * HZ) /* 800 minute FORMAT UNIT default timeout */
 #define BS 512               /* Default blocksize */
-#define IPR_CCB_CDB_LEN 16
+#define IPR_CCB_CDB_LEN 6
 #define IPR_MAX_XFER 0x8000
 #define IPR_S_G_BUFF_ALIGNMENT 512
 const char NAME[] = "setblocksize";
