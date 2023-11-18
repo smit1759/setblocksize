@@ -592,7 +592,7 @@ command!\n");
    int rc;
    struct sense_data_t sense_data;
    uint8_t ioctl_buffer[12];
-   uint8_t sg_buffer[20];
+   uint8_t sg_buffer[18];
    mode_parm_hdr = (struct ipr_mode_parm_hdr *)ioctl_buffer;
    memset(ioctl_buffer, 0, 12);
    mode_parm_hdr->block_desc_len = sizeof(struct ipr_block_desc);
@@ -619,7 +619,7 @@ command!\n");
    printf("IOCTL Buffer: \n");
    print_buf(sg_buffer, sizeof(sg_buffer));
    printf("\n");
-   if (write(sg_fd, sg_buffer, sizeof(sg_buffer)) < 0)
+   if (write(sg_fd, sg_buffer, 12) < 0)
    {
       fprintf(stderr, "   Write error\n\n");
       close(sg_fd);
