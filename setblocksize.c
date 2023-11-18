@@ -76,6 +76,7 @@ To do:          -
 #include "include/sg_err.h"
 #include <stdint.h>
 #include <linux/types.h>
+#include <syslog.h>
 /*
 ********************************************************************************
 * Global constants
@@ -91,6 +92,34 @@ To do:          -
 #define FORMAT_UNIT 0x04
 #define IPR_FORMAT_DATA 0x10
 #define IPR_FORMAT_IMMED 2
+
+#define scsi_log(level, dev, fmt)         \
+   do                                     \
+   {                                      \
+      syslog(level, "%d:%d:%d:%d: " fmt); \
+   } while (0)
+
+#define scsi_info(dev, fmt) \
+   scsi_log(LOG_NOTICE, dev, fmt)
+
+#define scsi_err(dev, fmt, ...) \
+   scsi_log(LOG_ERR, dev, fmt)
+
+#define scsi_warn(dev, fmt, ...) \
+   scsi_log(LOG_WARNING, dev, fmt)
+
+#define scsi_cmd_err(dev, sense, cmd, rc)                                      \
+   do                                                                          \
+   {                                                                           \
+      if ((((sense)->error_code & 0x7F) != 0x70) ||                            \
+          (((sense)->sense_key & 0x0F) != 0x05))                               \
+      {                                                                        \
+         scsi_err("dev", "%s failed. rc=%d, SK: %X ASC: %X ASCQ: %X\n",        \
+                  cmd, rc, (sense)->sense_key & 0x0f, (sense)->add_sense_code, \
+                  (sense)->add_sense_code_qual);                               \
+      }                                                                        \
+   } while (0)
+
 const char NAME[] = "setblocksize";
 const char VER[] = "V0.2";
 const int cdb_size[] = {6, 10, 10, 0, 16, 12, 16, 16};
@@ -643,10 +672,7 @@ command!\n");
    rc = _sg_ioctl(sg_fd, &cdb, &sg_buffer, newSize, SG_DXFER_TO_DEV, &sense_data, 30, 0);
    if (rc != 0)
    {
-      printf("\n");
-      printf("    Failed. RC: %d\n", rc);
-      print_buf(&sense_data, sizeof(sense_data));
-      printf("\n");
+      scsi_cmd_err("dev", &sense_data, "Mode Select", rc);
       // printf("    Sense error: %s", );
       exit(1);
    }
@@ -738,11 +764,12 @@ command!\n");
    free(defect_list_hdr);
    if (rc != 0)
    {
-      printf("\n");
-      printf("    Failed. RC: %d\n", rc);
-      print_buf(&sense_data1, sizeof(sense_data1));
-      printf("\n");
-      // printf("    Sense error: %s", );
+      scsi_cmd_err("dev", &sense_data, "Format Unit", rc);
+      // printf("\n");
+      // printf("    Failed. RC: %d\n", rc);
+      // print_buf(&sense_data1, sizeof(sense_data1));
+      // printf("\n");
+      //  printf("    Sense error: %s", );
       exit(1);
    }
    /*
