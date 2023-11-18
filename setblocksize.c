@@ -599,6 +599,9 @@ command!\n");
    printf("Params: \n");
    print_buf(mode_parm_hdr, sizeof(mode_parm_hdr));
    printf("\n");
+   printf("Block Descriptor: \n");
+   print_buf(block_desc, sizeof(block_desc));
+   printf("\n");
    // prepare cdb
    uint8_t cdb[IPR_CCB_CDB_LEN];
    memset(cdb, 0, IPR_CCB_CDB_LEN);
