@@ -247,7 +247,7 @@ static int _sg_ioctl(int fd, uint8_t cdb[IPR_CCB_CDB_LEN],
    for (i = 0; i < (retries + 1); i++)
    {
       printf("Data param (%d): \n", sizeof(data));
-      printf("Data& %x, Data: %x\n", &data, data);
+      printf("Data& %p, Data: %x\n", &data, data);
       print_buf(data, sizeof(data));
       printf("\n");
       memset(&io_hdr_t, 0, sizeof(io_hdr_t));
