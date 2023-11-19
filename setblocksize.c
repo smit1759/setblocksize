@@ -617,16 +617,16 @@ command!\n");
    uint8_t newSize = sizeof(struct ipr_block_desc) + sizeof(struct ipr_mode_parm_hdr);
    int rc;
    struct sense_data_t sense_data;
-   uint8_t ioctl_buffer[12];
+   uint8_t ioctl_buffer[18];
 
    mode_parm_hdr = (struct ipr_mode_parm_hdr *)ioctl_buffer;
-   memset(ioctl_buffer, 0, 12);
+   memset(ioctl_buffer, 0, 18);
    mode_parm_hdr->block_desc_len = sizeof(struct ipr_block_desc);
    block_desc = (struct ipr_block_desc *)(mode_parm_hdr + 1);
    block_desc->block_length[0] = 0x00;
    block_desc->block_length[1] = bs >> 8;
    block_desc->block_length[2] = bs & 0xff;
-   memcpy(ioctl_buffer + sizeof(struct ipr_mode_parm_hdr), block_desc, sizeof(block_desc));
+   // memcpy(ioctl_buffer + sizeof(struct ipr_mode_parm_hdr), block_desc, sizeof(block_desc));
    printf("Params: \n");
    print_buf(mode_parm_hdr, sizeof(mode_parm_hdr));
    printf("\n");
@@ -640,10 +640,11 @@ command!\n");
    cdb[0] = MODE_SELECT;
    cdb[1] = 0x10; /* PF = 1, SP = 0 */
    cdb[4] = 0x0C;
-   uint8_t sg_buffer[sizeof(cdb) + sizeof(struct ipr_mode_parm_hdr) + sizeof(struct ipr_block_desc)];
+   uint8_t sg_buffer[sizeof(struct ipr_mode_parm_hdr) + sizeof(struct ipr_block_desc)];
    memset(sg_buffer, 0, sizeof(sg_buffer));
    // memcpy(sg_buffer, cdb, sizeof(cdb));
-   memcpy(sg_buffer, ioctl_buffer, sizeof(ioctl_buffer));
+   memcpy(sg_buffer, mode_parm_hdr, sizeof(mode_parm_hdr));
+   memcpy(sg_buffer + sizeof(mode_parm_hdr), block_desc, sizeof(block_desc));
    printf("IOCTL Buffer: \n");
    print_buf(sg_buffer, sizeof(sg_buffer));
    printf("\n");
@@ -662,7 +663,7 @@ command!\n");
    //  prepare header
 
    // printf("newSize: %d, ioctlBufferSize: %d\n", sizeof(struct ipr_block_desc) + sizeof(struct ipr_mode_parm_hdr), sizeof(ioctl_buffer));
-   rc = _sg_ioctl(sg_fd, cdb, ioctl_buffer, newSize, SG_DXFER_TO_DEV, &sense_data, 30, 0);
+   rc = _sg_ioctl(sg_fd, cdb, sg_buffer, sizeof(sg_buffer), SG_DXFER_TO_DEV, &sense_data, 30, 0);
    if (rc != 0)
    {
       scsi_cmd_err("dev", &sense_data, "Mode Select", rc);
@@ -758,6 +759,7 @@ command!\n");
    if (rc != 0)
    {
       scsi_cmd_err("dev", &sense_data, "Format Unit", rc);
+      close(sg_fd);
       // printf("\n");
       // printf("    Failed. RC: %d\n", rc);
       // print_buf(&sense_data1, sizeof(sense_data1));
