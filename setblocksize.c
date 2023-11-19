@@ -666,6 +666,7 @@ command!\n");
    if (rc != 0)
    {
       scsi_cmd_err("dev", &sense_data, "Mode Select", rc);
+      close(sg_fd);
       exit(1);
    }
    // copy to our buffer
