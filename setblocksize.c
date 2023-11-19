@@ -247,8 +247,8 @@ static int _sg_ioctl(int fd, uint8_t cdb[IPR_CCB_CDB_LEN],
    for (i = 0; i < (retries + 1); i++)
    {
       printf("Data param (%d): \n", sizeof(data));
-      printf("Data& %p, Data: %x\n", &data, data);
-      print_buf(data, sizeof(data));
+      // printf("Data& %p, Data: %p\n", &data, data);
+      // print_buf(data, sizeof(data));
       printf("\n");
       memset(&io_hdr_t, 0, sizeof(io_hdr_t));
       memset(&sd, 0, sizeof(struct sense_data_t));
@@ -264,7 +264,7 @@ static int _sg_ioctl(int fd, uint8_t cdb[IPR_CCB_CDB_LEN],
       io_hdr_t.cmdp = cdb;
       io_hdr_t.dxfer_direction = data_direction;
       io_hdr_t.dxfer_len = xfer_len;
-      io_hdr_t.dxferp = data;
+      io_hdr_t.dxferp = &data;
       printf("Header: \n");
       print_buf(&io_hdr_t, sizeof(io_hdr_t));
       printf("\n");
@@ -657,7 +657,7 @@ command!\n");
    //  prepare header
 
    // printf("newSize: %d, ioctlBufferSize: %d\n", sizeof(struct ipr_block_desc) + sizeof(struct ipr_mode_parm_hdr), sizeof(ioctl_buffer));
-   rc = _sg_ioctl(sg_fd, cdb, ioctl_buffer, sizeof(struct ipr_block_desc) + sizeof(struct ipr_mode_parm_hdr), SG_DXFER_TO_DEV, &sense_data, 30, 0);
+   rc = _sg_ioctl(sg_fd, cdb, ioctl_buffer, 18, SG_DXFER_TO_DEV, &sense_data, 30, 0);
    if (rc != 0)
    {
       scsi_cmd_err("dev", &sense_data, "Mode Select", rc);
