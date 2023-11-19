@@ -237,7 +237,7 @@ static int _sg_ioctl(int fd, uint8_t cdb[IPR_CCB_CDB_LEN],
       io_hdr_t.cmdp = cdb;
       io_hdr_t.dxfer_direction = data_direction;
       io_hdr_t.dxfer_len = xfer_len;
-      io_hdr_t.dxferp = dxferp;
+      io_hdr_t.dxferp = &dxferp;
       printf("Header: \n");
       print_buf(&io_hdr_t, sizeof(io_hdr_t));
       printf("\n");
