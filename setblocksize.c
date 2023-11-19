@@ -97,6 +97,11 @@ To do:          -
 #define IPR_INTERNAL_DEV_TIMEOUT (2 * 60) /* 2 minutes */
 #define IPR_JBOD_SYSFS_UNBIND 0
 #define IPR_JBOD_SYSFS_BIND 1
+#define IPR_JBOD_BLOCK_SIZE 512
+#define IPR_DEFAULT_AF_BLOCK_SIZE 522
+#define IPR_JBOD_4K_BLOCK_SIZE 4096
+#define IPR_AF_4K_BLOCK_SIZE 4224
+#define IOCTL_BUFFER_SIZE 512
 #define IPR_MODE_SENSE_LENGTH 255
 #define IPR_SET_MODE(change_mask, cur_val, new_val) \
    {                                                \
@@ -820,8 +825,8 @@ command!\n");
    block_desc = (struct ipr_block_desc *)(mode_parm_hdr + 1);
    /* Setup block size */
    block_desc->block_length[0] = 0x00;
-   block_desc->block_length[1] = bs >> 8;
-   block_desc->block_length[2] = bs & 0xff;
+   block_desc->block_length[1] = IPR_JBOD_4K_BLOCK_SIZE >> 8;
+   block_desc->block_length[2] = IPR_JBOD_4K_BLOCK_SIZE & 0xff;
    // memcpy(&ioctl_buffer, &mode_parm_hdr, sizeof(mode_parm_hdr));
    // memcpy(&ioctl_buffer + sizeof(mode_parm_hdr), &block_desc, sizeof(block_desc));
 
