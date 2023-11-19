@@ -95,7 +95,17 @@ To do:          -
 #define IPR_FORMAT_IMMED 2
 #define IPR_INTERNAL_TIMEOUT (30)         /* 30 seconds */
 #define IPR_INTERNAL_DEV_TIMEOUT (2 * 60) /* 2 minutes */
-
+#define IPR_JBOD_SYSFS_UNBIND 0
+#define IPR_JBOD_SYSFS_BIND 1
+#define IPR_MODE_SENSE_LENGTH 255
+#define IPR_SET_MODE(change_mask, cur_val, new_val) \
+   {                                                \
+      int mod_bits = (cur_val ^ new_val);           \
+      if ((change_mask & mod_bits) == mod_bits)     \
+      {                                             \
+         cur_val = new_val;                         \
+      }                                             \
+   }
 #define scsi_log(level, dev, fmt)         \
    do                                     \
    {                                      \
@@ -167,6 +177,41 @@ struct df_sense_data_t
    uint8_t rfield;
    uint8_t rsrvd[2];
    uint8_t add_sense_len;
+};
+
+struct ipr_mode_page_hdr
+{
+   u8 page_code : 6;
+   u8 reserved1 : 1;
+   u8 parms_saveable : 1;
+   u8 page_length;
+};
+struct ipr_control_mode_page
+{
+   /* Mode page 0x0A */
+   struct ipr_mode_page_hdr hdr;
+   u8 rlec : 1;
+   u8 gltsd : 1;
+   u8 reserved1 : 3;
+   u8 tst : 3;
+   u8 dque : 1;
+   u8 qerr : 2;
+   u8 reserved2 : 1;
+   u8 queue_algorithm_modifier : 4;
+   u8 eaerp : 1;
+   u8 uaaerp : 1;
+   u8 raerp : 1;
+   u8 swp : 1;
+   u8 reserved4 : 2;
+   u8 rac : 1;
+   u8 reserved3 : 1;
+   u8 autoload_mode : 3;
+   u8 reserved5 : 3;
+   u8 tas : 1;
+   u8 ato : 1;
+   u16 ready_aen_holdoff_period;
+   u16 busy_timeout_period;
+   u16 reserved6;
 };
 
 static void print_buf(const unsigned char *buf, size_t buf_len)
@@ -319,6 +364,120 @@ int ipr_mode_select(int fd, void *buff, int length)
 }
 
 /**
+ * mode_sense -
+ * @dev:		ipr dev struct
+ * @page:		page number
+ * @buff:		buffer
+ * @sense_data		sense_data_t struct
+ *
+ * Returns:
+ *   0 if success / non-zero on failure
+ **/
+static int mode_sense(int fd, u8 page, void *buff,
+                      struct sense_data_t *sense_data)
+{
+   u8 cdb[IPR_CCB_CDB_LEN];
+   int rc;
+   u8 length = IPR_MODE_SENSE_LENGTH; /* xxx FIXME? */
+
+   memset(cdb, 0, IPR_CCB_CDB_LEN);
+
+   cdb[0] = MODE_SENSE;
+   cdb[2] = page;
+   cdb[4] = length;
+
+   rc = sg_ioctl(fd, cdb, buff,
+                 length, SG_DXFER_FROM_DEV,
+                 sense_data, IPR_INTERNAL_DEV_TIMEOUT);
+   return rc;
+}
+
+/**
+ * ipr_mod_sense - issue a mode sense command
+ * @dev:		ipr dev struct
+ * @page:       	mode page
+ * @buff:		data buffer
+ *
+ * Returns:
+ *   0 if success / non-zero on failure
+ **/
+int ipr_mode_sense(int fd, u8 page, void *buff)
+{
+   struct sense_data_t sense_data;
+   int rc;
+
+   memset(&sense_data, 0, sizeof(sense_data));
+   rc = mode_sense(fd, page, buff, &sense_data);
+
+   /* post log if error unless error is device format in progress */
+   if ((rc != 0) && (rc != ENOENT) &&
+       (((sense_data.error_code & 0x7F) != 0x70) ||
+        ((sense_data.sense_key & 0x0F) != 0x02) || /* NOT READY */
+        (sense_data.add_sense_code != 0x04) ||     /* LOGICAL UNIT NOT READY */
+        (sense_data.add_sense_code_qual != 0x04))) /* FORMAT IN PROGRESS */
+      scsi_cmd_err(dev, &sense_data, "Mode Sense", rc);
+
+   return rc;
+}
+/**
+ * ipr_disable_qerr -
+ * @dev:		ipr dev struct
+ *
+ * Returns:
+ *   0 if success / non-zero on failure
+ **/
+int ipr_disable_qerr(int fd)
+{
+   u8 ioctl_buffer[512];
+   u8 ioctl_buffer2[512];
+   struct ipr_control_mode_page *control_mode_page;
+   struct ipr_control_mode_page *control_mode_page_changeable;
+   struct ipr_mode_parm_hdr *mode_parm_hdr;
+   int status;
+   u8 length;
+
+   /* Issue mode sense to get the control mode page */
+   status = ipr_mode_sense(fd, 0x0a, &ioctl_buffer);
+
+   if (status)
+      return -EIO;
+
+   /* Issue mode sense to get the control mode page */
+   status = ipr_mode_sense(fd, 0x4a, &ioctl_buffer2);
+
+   if (status)
+      return -EIO;
+
+   mode_parm_hdr = (struct ipr_mode_parm_hdr *)ioctl_buffer2;
+
+   control_mode_page_changeable = (struct ipr_control_mode_page *)(((u8 *)(mode_parm_hdr + 1)) + mode_parm_hdr->block_desc_len);
+
+   mode_parm_hdr = (struct ipr_mode_parm_hdr *)ioctl_buffer;
+
+   control_mode_page = (struct ipr_control_mode_page *)(((u8 *)(mode_parm_hdr + 1)) + mode_parm_hdr->block_desc_len);
+
+   /* Turn off QERR since some drives do not like QERR
+    and IMMED bit at the same time. */
+   IPR_SET_MODE(control_mode_page_changeable->qerr,
+                control_mode_page->qerr, 0);
+
+   /* Issue mode select to set page x0A */
+   length = mode_parm_hdr->length + 1;
+
+   mode_parm_hdr->length = 0;
+   control_mode_page->hdr.parms_saveable = 0;
+   mode_parm_hdr->medium_type = 0;
+   mode_parm_hdr->device_spec_parms = 0;
+
+   status = ipr_mode_select(fd, &ioctl_buffer, length);
+
+   if (status)
+      return -EIO;
+
+   return 0;
+}
+
+/**
  * ipr_format_unit -
  * @dev:		ipr dev struct
  *
@@ -362,7 +521,6 @@ int ipr_reset_device(int fd)
    if (rc != 0)
       scsi_err(dev, "Reset Device failed. %m\n");
 
-   close(fd);
    return rc;
 }
 
@@ -688,6 +846,7 @@ command!\n");
    // print_buf(cdb, sizeof(cdb));
    // printf("\n");
    //  prepare header
+   ipr_disable_qerr(sg_fd);
 
    // printf("newSize: %d, ioctlBufferSize: %d\n", sizeof(struct ipr_block_desc) + sizeof(struct ipr_mode_parm_hdr), sizeof(ioctl_buffer));
    print_buf(ioctl_buffer, sizeof(ioctl_buffer));
@@ -697,6 +856,8 @@ command!\n");
    {
       print_buf(&sense_data, sizeof(sense_data));
       scsi_cmd_err("dev", &sense_data, "Mode Select", rc);
+      rc = ipr_reset_device(sg_fd);
+
       close(sg_fd);
       exit(1);
    }
