@@ -833,7 +833,6 @@ command!\n");
    cdb[4] = sizeof(struct ipr_block_desc) + sizeof(struct ipr_mode_parm_hdr);
    printf("\nSend MODE SELECT command ...\n");
    ipr_disable_qerr(sg_fd);
-   print_buf(ioctl_buffer, sizeof(ioctl_buffer));
    rc = ipr_mode_select(sg_fd, ioctl_buffer, sizeof(struct ipr_block_desc) + sizeof(struct ipr_mode_parm_hdr));
    if (rc != 0)
    {
