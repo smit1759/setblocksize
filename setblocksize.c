@@ -77,6 +77,7 @@ To do:          -
 #include <stdint.h>
 #include <linux/types.h>
 #include <syslog.h>
+#include <scsi/sg.h>
 /*
 ********************************************************************************
 * Global constants
@@ -209,7 +210,7 @@ static int _sg_ioctl(int fd, uint8_t cdb[IPR_CCB_CDB_LEN],
                      uint32_t timeout_in_sec, int retries)
 {
    int rc = 0;
-   sg_io_hdr_t_ibm io_hdr_t;
+   sg_io_hdr_t io_hdr_t;
    sg_iovec_t *iovec = NULL;
    int iovec_count = 0;
    int i;
