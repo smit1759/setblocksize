@@ -111,10 +111,10 @@ To do:          -
 #define scsi_warn(dev, fmt, ...) \
    scsi_log(LOG_WARNING, dev, fmt)
 
-#define scsi_cmd_err(dev, sense, cmd, rc)                                \
-   scsi_err("dev", "%s failed. rc=%d, SK: %X ASC: %X ASCQ: %X\n",        \
-            cmd, rc, (sense)->sense_key & 0x0f, (sense)->add_sense_code, \
-            (sense)->add_sense_code_qual);
+#define scsi_cmd_err(dev, sense, cmd, rc)                              \
+   printf("%s failed. rc=%d, SK: %X ASC: %X ASCQ: %X\n",               \
+          cmd, rc, (sense)->sense_key & 0x0f, (sense)->add_sense_code, \
+          (sense)->add_sense_code_qual);
 
 const char NAME[] = "setblocksize";
 const char VER[] = "V0.2";
@@ -349,6 +349,20 @@ int ipr_format_unit(int fd)
    free(defect_list_hdr);
    if (rc != 0)
       scsi_cmd_err(dev, &sense_data, "Format Unit", rc);
+   return rc;
+}
+
+int ipr_reset_device(int fd)
+{
+   int rc, arg;
+
+   arg = SG_SCSI_RESET_DEVICE;
+   rc = ioctl(fd, SG_SCSI_RESET, &arg);
+
+   if (rc != 0)
+      scsi_err(dev, "Reset Device failed. %m\n");
+
+   close(fd);
    return rc;
 }
 
@@ -634,9 +648,9 @@ command!\n");
    /* Send MODE SELECT command */
    printf("Prepare command ...\n");
    fflush(stdout);
-   sghp->reply_len = sizeof(struct sg_header);
-   sghp->pack_id = 0;
-   sghp->twelve_byte = 0;
+   // sghp->reply_len = sizeof(struct sg_header);
+   // sghp->pack_id = 0;
+   // sghp->twelve_byte = 0;
 
    struct ipr_mode_parm_hdr *mode_parm_hdr;
    struct ipr_block_desc *block_desc;
@@ -678,7 +692,7 @@ command!\n");
    // printf("newSize: %d, ioctlBufferSize: %d\n", sizeof(struct ipr_block_desc) + sizeof(struct ipr_mode_parm_hdr), sizeof(ioctl_buffer));
    print_buf(ioctl_buffer, sizeof(ioctl_buffer));
    // rc = _sg_ioctl(sg_fd, cdb, &ioctl_buffer, newSize, SG_DXFER_TO_DEV, &sense_data, 30, 0);
-   rc = ipr_mode_select(sg_fd, ioctl_buffer, sizeof(struct ipr_block_desc) + sizeof(struct ipr_mode_parm_hdr));
+   rc = ipr_mode_select(sg_fd, &ioctl_buffer, sizeof(struct ipr_block_desc) + sizeof(struct ipr_mode_parm_hdr));
    if (rc != 0)
    {
       print_buf(&sense_data, sizeof(sense_data));
