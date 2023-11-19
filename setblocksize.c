@@ -516,7 +516,7 @@ int ipr_reset_device(int fd)
    rc = ioctl(fd, SG_SCSI_RESET, &arg);
 
    if (rc != 0)
-      scsi_err(dev, "Reset Device failed. %m\n");
+      scsi_err("dev", "Reset Device failed. %m\n");
 
    return rc;
 }
