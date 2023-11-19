@@ -198,7 +198,7 @@ static void print_buf(const unsigned char *buf, size_t buf_len)
 }
 
 static int _sg_ioctl(int fd, uint8_t cdb[IPR_CCB_CDB_LEN],
-                     void *data, uint32_t xfer_len, uint32_t data_direction,
+                     void *dxferp, uint32_t xfer_len, uint32_t data_direction,
                      struct sense_data_t *sense_data,
                      uint32_t timeout_in_sec, int retries)
 {
@@ -208,45 +208,12 @@ static int _sg_ioctl(int fd, uint8_t cdb[IPR_CCB_CDB_LEN],
    int iovec_count = 0;
    int i;
    int buff_len, segment_size;
-   void *dxferp;
    uint8_t *buf;
    struct sense_data_t sd;
    struct df_sense_data_t *dfsdp = NULL;
 
-   iovec_count = 0;
-   /* check if scatter gather should be used */
-   if (xfer_len > IPR_MAX_XFER)
-   {
-      iovec_count = (xfer_len / IPR_MAX_XFER) + 1;
-      iovec = malloc(iovec_count * sizeof(sg_iovec_t));
-
-      buff_len = xfer_len;
-      segment_size = IPR_MAX_XFER;
-
-      for (i = 0; (i < iovec_count) && (buff_len != 0); i++)
-      {
-         posix_memalign(&(iovec[i].iov_base), IPR_S_G_BUFF_ALIGNMENT, segment_size);
-         if (data_direction == SG_DXFER_TO_DEV)
-            memcpy(iovec[i].iov_base, data + (IPR_MAX_XFER * i), segment_size);
-         iovec[i].iov_len = segment_size;
-
-         buff_len -= segment_size;
-         if (buff_len < segment_size)
-            segment_size = buff_len;
-      }
-
-      iovec_count = i;
-      dxferp = (void *)iovec;
-   }
-   else
-   {
-      iovec_count = 0;
-      dxferp = data;
-   }
-
    for (i = 0; i < (retries + 1); i++)
    {
-      printf("Data param (%d): \n", sizeof(data));
       // printf("Data& %p, Data: %p\n", &data, data);
       // print_buf(data, sizeof(data));
       printf("\n");
@@ -264,7 +231,7 @@ static int _sg_ioctl(int fd, uint8_t cdb[IPR_CCB_CDB_LEN],
       io_hdr_t.cmdp = cdb;
       io_hdr_t.dxfer_direction = data_direction;
       io_hdr_t.dxfer_len = xfer_len;
-      io_hdr_t.dxferp = &data;
+      io_hdr_t.dxferp = dxferp;
       printf("Header: \n");
       print_buf(&io_hdr_t, sizeof(io_hdr_t));
       printf("\n");
@@ -315,7 +282,7 @@ static int _sg_ioctl(int fd, uint8_t cdb[IPR_CCB_CDB_LEN],
 out:
    if (iovec_count)
    {
-      for (i = 0, buf = (uint8_t *)data; i < iovec_count; i++)
+      for (i = 0, buf = (uint8_t *)dxferp; i < iovec_count; i++)
       {
          if (data_direction == SG_DXFER_FROM_DEV)
             memcpy(buf, iovec[i].iov_base, iovec[i].iov_len);
