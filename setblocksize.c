@@ -640,7 +640,7 @@ command!\n");
    cdb[0] = MODE_SELECT;
    cdb[1] = 0x10; /* PF = 1, SP = 0 */
    cdb[4] = 0x0C;
-   uint8_t sg_buffer[18];
+   uint8_t *sg_buffer[18];
    memset(sg_buffer, 0, sizeof(sg_buffer));
    // memcpy(sg_buffer, cdb, sizeof(cdb));
    memcpy(sg_buffer, mode_parm_hdr, sizeof(mode_parm_hdr));
