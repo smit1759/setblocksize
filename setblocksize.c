@@ -617,38 +617,25 @@ command!\n");
    uint8_t newSize = sizeof(struct ipr_block_desc) + sizeof(struct ipr_mode_parm_hdr);
    int rc;
    struct sense_data_t sense_data;
-   uint8_t ioctl_buffer[18];
+   uint8_t ioctl_buffer[512];
+   uint8_t cdb[IPR_CCB_CDB_LEN];
 
    mode_parm_hdr = (struct ipr_mode_parm_hdr *)ioctl_buffer;
-   memset(ioctl_buffer, 0, 18);
+
+   memset(ioctl_buffer, 0, 255);
    mode_parm_hdr->block_desc_len = sizeof(struct ipr_block_desc);
+
    block_desc = (struct ipr_block_desc *)(mode_parm_hdr + 1);
+
+   /* Setup block size */
    block_desc->block_length[0] = 0x00;
    block_desc->block_length[1] = bs >> 8;
    block_desc->block_length[2] = bs & 0xff;
-   // memcpy(ioctl_buffer + sizeof(struct ipr_mode_parm_hdr), block_desc, sizeof(block_desc));
-   printf("Params: \n");
-   print_buf(mode_parm_hdr, sizeof(mode_parm_hdr));
-   printf("\n");
-   printf("Block Descriptor: \n");
-   print_buf(block_desc, sizeof(block_desc));
-   printf("\n");
+   memset(cdb, 0, IPR_CCB_CDB_LEN);
 
-   // prepare cdb
-   uint8_t cdb[6];
-   memset(cdb, 0, 6);
    cdb[0] = MODE_SELECT;
    cdb[1] = 0x10; /* PF = 1, SP = 0 */
-   cdb[4] = 0x0C;
-   uint8_t sg_buffer[18];
-   memset(sg_buffer, 0, sizeof(sg_buffer));
-   // memcpy(sg_buffer, cdb, sizeof(cdb));
-   memcpy(sg_buffer, mode_parm_hdr, sizeof(mode_parm_hdr));
-   memcpy(sg_buffer + sizeof(mode_parm_hdr), block_desc, sizeof(block_desc));
-   printf("IOCTL Buffer: \n");
-   print_buf(sg_buffer, sizeof(sg_buffer));
-   printf("\n");
-   // uint8_t command[] = {0x00, 0x00, 0x00, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x00};
+   cdb[4] = sizeof(struct ipr_block_desc) + sizeof(struct ipr_mode_parm_hdr);
    printf("Send MODE SELECT command ...\n");
    // if (write(sg_fd, sg_buffer, newSize) < 0)
    //{
@@ -663,7 +650,7 @@ command!\n");
    //  prepare header
 
    // printf("newSize: %d, ioctlBufferSize: %d\n", sizeof(struct ipr_block_desc) + sizeof(struct ipr_mode_parm_hdr), sizeof(ioctl_buffer));
-   rc = _sg_ioctl(sg_fd, cdb, &sg_buffer, sizeof(sg_buffer), SG_DXFER_TO_DEV, &sense_data, 30, 0);
+   rc = _sg_ioctl(sg_fd, cdb, ioctl_buffer, sizeof(struct ipr_block_desc) + sizeof(struct ipr_mode_parm_hdr), SG_DXFER_TO_DEV, &sense_data, 30, 0);
    if (rc != 0)
    {
       scsi_cmd_err("dev", &sense_data, "Mode Select", rc);
