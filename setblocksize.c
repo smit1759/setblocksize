@@ -315,6 +315,7 @@ int main(int argc, char **argv)
    /* FORMAT UNIT command */
    unsigned char format_unit[6] = {0x04, 0x00, 0x00, 0x00, 0x00, 0x00};
    /* Parameter list with block descriptor */
+   // 00 00 00 08 00 00 00 00 00 00 02 00
    unsigned char para_list[12] = {0x00, 0x00, 0x00, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
    /* new block descriptor and params from iprconfig */
 
@@ -588,20 +589,14 @@ command!\n");
    struct sense_data_t sense_data;
    uint8_t ioctl_buffer[512];
    uint8_t cdb[IPR_CCB_CDB_LEN];
-
    mode_parm_hdr = (struct ipr_mode_parm_hdr *)ioctl_buffer;
-
-   memset(ioctl_buffer, 0, 512);
-
+   memset(ioctl_buffer, 0, 255);
    mode_parm_hdr->block_desc_len = sizeof(struct ipr_block_desc);
-
    block_desc = (struct ipr_block_desc *)(mode_parm_hdr + 1);
-
    /* Setup block size */
    block_desc->block_length[0] = 0x00;
    block_desc->block_length[1] = bs >> 8;
    block_desc->block_length[2] = bs & 0xff;
-   print_buf(ioctl_buffer, newSize);
    // memcpy(&ioctl_buffer, &mode_parm_hdr, sizeof(mode_parm_hdr));
    // memcpy(&ioctl_buffer + sizeof(mode_parm_hdr), &block_desc, sizeof(block_desc));
 
@@ -625,7 +620,7 @@ command!\n");
 
    // printf("newSize: %d, ioctlBufferSize: %d\n", sizeof(struct ipr_block_desc) + sizeof(struct ipr_mode_parm_hdr), sizeof(ioctl_buffer));
    print_buf(ioctl_buffer, sizeof(ioctl_buffer));
-   rc = _sg_ioctl(sg_fd, cdb, ioctl_buffer, 12, SG_DXFER_TO_DEV, &sense_data, 30, 0);
+   rc = _sg_ioctl(sg_fd, cdb, &ioctl_buffer, newSize, SG_DXFER_TO_DEV, &sense_data, 30, 0);
    if (rc != 0)
    {
       print_buf(&sense_data, sizeof(sense_data));
