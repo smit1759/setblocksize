@@ -338,8 +338,6 @@ int main(int argc, char **argv)
    char sbuf[256];
    char *file_name = NULL;
    unsigned char scsi_buf[65536];
-   struct ipr_mode_parm_hdr *mode_parm_hdr;
-   struct ipr_block_desc *block_desc;
    struct sg_header *sghp = (struct sg_header *)scsi_buf;
    Sg_scsi_id device;
    /* INQUIRY command */
@@ -613,6 +611,9 @@ command!\n");
    sghp->reply_len = sizeof(struct sg_header);
    sghp->pack_id = 0;
    sghp->twelve_byte = 0;
+
+   struct ipr_mode_parm_hdr *mode_parm_hdr;
+   struct ipr_block_desc *block_desc;
    // prepare params
    uint8_t newSize = sizeof(struct ipr_block_desc) + sizeof(struct ipr_mode_parm_hdr);
    int rc;
@@ -620,17 +621,21 @@ command!\n");
    uint8_t ioctl_buffer[512];
    uint8_t cdb[IPR_CCB_CDB_LEN];
 
-   mode_parm_hdr = (struct ipr_mode_parm_hdr *)ioctl_buffer;
+   // mode_parm_hdr = (struct ipr_mode_parm_hdr *)ioctl_buffer;
 
    memset(ioctl_buffer, 0, 255);
+
    mode_parm_hdr->block_desc_len = sizeof(struct ipr_block_desc);
 
-   block_desc = (struct ipr_block_desc *)(mode_parm_hdr + 1);
+   // block_desc = (struct ipr_block_desc *)(mode_parm_hdr + 1);
 
    /* Setup block size */
    block_desc->block_length[0] = 0x00;
    block_desc->block_length[1] = bs >> 8;
    block_desc->block_length[2] = bs & 0xff;
+   memcpy(ioctl_buffer, mode_parm_hdr, sizeof(mode_parm_hdr));
+   memcpy(ioctl_buffer + sizeof(mode_parm_hdr), block_desc, sizeof(block_desc));
+
    memset(cdb, 0, IPR_CCB_CDB_LEN);
 
    cdb[0] = MODE_SELECT;
