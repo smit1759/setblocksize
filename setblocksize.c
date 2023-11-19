@@ -92,6 +92,8 @@ To do:          -
 #define FORMAT_UNIT 0x04
 #define IPR_FORMAT_DATA 0x10
 #define IPR_FORMAT_IMMED 2
+#define IPR_INTERNAL_TIMEOUT (30)         /* 30 seconds */
+#define IPR_INTERNAL_DEV_TIMEOUT (2 * 60) /* 2 minutes */
 
 #define scsi_log(level, dev, fmt)         \
    do                                     \
@@ -121,6 +123,10 @@ const int cdb_size[] = {6, 10, 10, 0, 16, 12, 16, 16};
 * Main function
 ********************************************************************************
 */
+typedef uint8_t u8;
+typedef uint16_t u16;
+typedef uint32_t u32;
+typedef uint64_t u64;
 
 struct ipr_block_desc
 {
@@ -294,6 +300,83 @@ out:
 
    return rc;
 };
+
+/**
+ * sg_ioctl -
+ * @fd: 		file descriptor
+ * @cdb:        	cdb
+ * @data:		data pointer
+ * @xfer_len            transfer length
+ * @data_direction      transfer to dev or from dev
+ * @sense_data          sense data pointer
+ * @timeout_in_sec      timeout value
+ *
+ * Returns:
+ *   0 if success / non-zero on failure
+ **/
+int sg_ioctl(int fd, u8 cdb[IPR_CCB_CDB_LEN],
+             void *data, u32 xfer_len, u32 data_direction,
+             struct sense_data_t *sense_data,
+             u32 timeout_in_sec)
+{
+   return _sg_ioctl(fd, cdb,
+                    data, xfer_len, data_direction,
+                    sense_data, timeout_in_sec, 1);
+};
+
+int ipr_mode_select(int fd, void *buff, int length)
+{
+   u8 cdb[IPR_CCB_CDB_LEN];
+   struct sense_data_t sense_data;
+   int rc;
+   memset(cdb, 0, IPR_CCB_CDB_LEN);
+
+   cdb[0] = MODE_SELECT;
+   cdb[1] = 0x10; /* PF = 1, SP = 0 */
+   cdb[4] = length;
+
+   rc = sg_ioctl(fd, cdb, buff,
+                 length, SG_DXFER_TO_DEV,
+                 &sense_data, IPR_INTERNAL_TIMEOUT);
+
+   if (rc != 0)
+      scsi_cmd_err(dev, &sense_data, "Mode Select", rc);
+   return rc;
+}
+
+/**
+ * ipr_format_unit -
+ * @dev:		ipr dev struct
+ *
+ * Returns:
+ *   0 if success / non-zero on failure
+ **/
+int ipr_format_unit(int fd)
+{
+   int rc;
+   u8 cdb[IPR_CCB_CDB_LEN];
+   struct sense_data_t sense_data;
+   u8 *defect_list_hdr;
+   int length = IPR_DEFECT_LIST_HDR_LEN;
+
+   memset(cdb, 0, IPR_CCB_CDB_LEN);
+
+   defect_list_hdr = calloc(1, IPR_DEFECT_LIST_HDR_LEN);
+
+   cdb[0] = FORMAT_UNIT;
+   cdb[1] = IPR_FORMAT_DATA; /* lun = 0, fmtdata = 1, cmplst = 0, defect list format = 0 */
+
+   defect_list_hdr[1] = IPR_FORMAT_IMMED; /* FOV = 0, DPRY = 0, DCRT = 0, STPF = 0, IP = 0, DSP = 0, Immed = 1, VS = 0 */
+
+   rc = sg_ioctl(fd, cdb, defect_list_hdr,
+                 length, SG_DXFER_TO_DEV,
+                 &sense_data, IPR_INTERNAL_DEV_TIMEOUT);
+
+   free(defect_list_hdr);
+   if (rc != 0)
+      scsi_cmd_err(dev, &sense_data, "Format Unit", rc);
+   return rc;
+}
 
 int main(int argc, char **argv)
 {
@@ -620,7 +703,8 @@ command!\n");
 
    // printf("newSize: %d, ioctlBufferSize: %d\n", sizeof(struct ipr_block_desc) + sizeof(struct ipr_mode_parm_hdr), sizeof(ioctl_buffer));
    print_buf(ioctl_buffer, sizeof(ioctl_buffer));
-   rc = _sg_ioctl(sg_fd, cdb, &ioctl_buffer, newSize, SG_DXFER_TO_DEV, &sense_data, 30, 0);
+   // rc = _sg_ioctl(sg_fd, cdb, &ioctl_buffer, newSize, SG_DXFER_TO_DEV, &sense_data, 30, 0);
+   rc = ipr_mode_select(sg_fd, ioctl_buffer, newSize);
    if (rc != 0)
    {
       print_buf(&sense_data, sizeof(sense_data));
@@ -686,34 +770,33 @@ command!\n");
    /* Send FORMAT UNIT command */
    printf("Prepare command ...\n");
    fflush(stdout);
-   sghp->reply_len = sizeof(struct sg_header);
-   sghp->pack_id = 0;
-   sghp->twelve_byte = 0;
-   memcpy(scsi_buf + sizeof(struct sg_header), format_unit, 0x06);
-   uint8_t cdb1[6];
-   uint8_t *defect_list_hdr;
-   struct sense_data_t sense_data1;
-   int length = IPR_DEFECT_LIST_HDR_LEN;
-   memset(cdb, 0, IPR_CCB_CDB_LEN);
-   defect_list_hdr = calloc(1, IPR_DEFECT_LIST_HDR_LEN);
-   cdb[0] = FORMAT_UNIT;
-   cdb[1] = IPR_FORMAT_DATA;              /* lun = 0, fmtdata = 1, cmplst = 0, defect list format = 0 */
-   defect_list_hdr[1] = IPR_FORMAT_IMMED; /* FOV = 0, DPRY = 0, DCRT = 0, STPF = 0, IP = 0, DSP = 0, Immed = 1, VS = 0 */
-   buf = timeout;
-   printf("Send set timeout command ...\n");
-   if (ioctl(sg_fd, SG_SET_TIMEOUT, &buf) < 0)
-   {
-      fprintf(stderr, "   Error!\n");
-      fprintf(stderr, "   Cannot set timeout\n\n");
-      close(sg_fd);
-      exit(1);
-   }
-   printf("Send FORMAT UNIT command ...\n");
-   rc = _sg_ioctl(sg_fd, cdb1, defect_list_hdr,
-                  length, SG_DXFER_TO_DEV,
-                  &sense_data1, 120, 0);
+   /* sghp->reply_len = sizeof(struct sg_header);
+     sghp->pack_id = 0;
+     sghp->twelve_byte = 0;
+     memcpy(scsi_buf + sizeof(struct sg_header), format_unit, 0x06);
+     uint8_t cdb1[6];
+     uint8_t *defect_list_hdr;
+     struct sense_data_t sense_data1;
+     int length = IPR_DEFECT_LIST_HDR_LEN;
+     memset(cdb, 0, IPR_CCB_CDB_LEN);
+     defect_list_hdr = calloc(1, IPR_DEFECT_LIST_HDR_LEN);
+     cdb[0] = FORMAT_UNIT;
+     cdb[1] = IPR_FORMAT_DATA;              lun = 0, fmtdata = 1, cmplst = 0, defect list format = 0
+     defect_list_hdr[1] = IPR_FORMAT_IMMED;  FOV = 0, DPRY = 0, DCRT = 0, STPF = 0, IP = 0, DSP = 0, Immed = 1, VS = 0
+     buf = timeout;
+     printf("Send set timeout command ...\n");
+     if (ioctl(sg_fd, SG_SET_TIMEOUT, &buf) < 0)
+     {
+        fprintf(stderr, "   Error!\n");
+        fprintf(stderr, "   Cannot set timeout\n\n");
+        close(sg_fd);
+        exit(1);
+     }*/
 
-   free(defect_list_hdr);
+   printf("Send FORMAT UNIT command ...\n");
+   // rc = _sg_ioctl(sg_fd, cdb1, defect_list_hdr,               length, SG_DXFER_TO_DEV,  &sense_data1, 120, 0);
+   rc = ipr_format_unit(sg_fd);
+   // free(defect_list_hdr);
    if (rc != 0)
    {
       scsi_cmd_err("dev", &sense_data, "Format Unit", rc);
