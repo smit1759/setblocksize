@@ -321,7 +321,7 @@ int sg_ioctl(int fd, u8 cdb[IPR_CCB_CDB_LEN],
 {
    return _sg_ioctl(fd, cdb,
                     data, xfer_len, data_direction,
-                    sense_data, timeout_in_sec, 1);
+                    sense_data, timeout_in_sec, 0);
 };
 
 int ipr_mode_select(int fd, void *buff, int length)
@@ -704,7 +704,7 @@ command!\n");
    // printf("newSize: %d, ioctlBufferSize: %d\n", sizeof(struct ipr_block_desc) + sizeof(struct ipr_mode_parm_hdr), sizeof(ioctl_buffer));
    print_buf(ioctl_buffer, sizeof(ioctl_buffer));
    // rc = _sg_ioctl(sg_fd, cdb, &ioctl_buffer, newSize, SG_DXFER_TO_DEV, &sense_data, 30, 0);
-   rc = ipr_mode_select(sg_fd, ioctl_buffer, newSize);
+   rc = ipr_mode_select(sg_fd, ioctl_buffer, sizeof(struct ipr_block_desc) + sizeof(struct ipr_mode_parm_hdr));
    if (rc != 0)
    {
       print_buf(&sense_data, sizeof(sense_data));
@@ -734,11 +734,11 @@ command!\n");
       fprintf(stderr, "   Read error\n\n");
       close(sg_fd);
       exit(1);
-   }*/
-   /* Error processing */
+   }
+   Error processing
    printf("Check status ...\n");
    fflush(stdout);
-   if (sghp->pack_id != 0) /* This shouldn't happen */
+   if (sghp->pack_id != 0) /* This shouldn't happen
       printf("   Inquiry pack_id mismatch: Wanted=%d, Got=%d\n!",
              0, sghp->pack_id);
    ok = 0;
@@ -766,7 +766,7 @@ command!\n");
       close(sg_fd);
       exit(1);
    }
-
+*/
    /* Send FORMAT UNIT command */
    printf("Prepare command ...\n");
    fflush(stdout);
