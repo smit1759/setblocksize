@@ -814,7 +814,6 @@ command!\n");
    int rc;
    struct sense_data_t sense_data;
    uint8_t ioctl_buffer[512];
-   uint8_t cdb[IPR_CCB_CDB_LEN];
    mode_parm_hdr = (struct ipr_mode_parm_hdr *)ioctl_buffer;
    memset(ioctl_buffer, 0, 255);
    mode_parm_hdr->block_desc_len = sizeof(struct ipr_block_desc);
@@ -826,11 +825,6 @@ command!\n");
    // memcpy(&ioctl_buffer, &mode_parm_hdr, sizeof(mode_parm_hdr));
    // memcpy(&ioctl_buffer + sizeof(mode_parm_hdr), &block_desc, sizeof(block_desc));
 
-   memset(cdb, 0, IPR_CCB_CDB_LEN);
-
-   cdb[0] = MODE_SELECT;
-   cdb[1] = 0x10; /* PF = 1, SP = 0 */
-   cdb[4] = sizeof(struct ipr_block_desc) + sizeof(struct ipr_mode_parm_hdr);
    printf("\nSend MODE SELECT command ...\n");
    ipr_disable_qerr(sg_fd);
    rc = ipr_mode_select(sg_fd, ioctl_buffer, sizeof(struct ipr_block_desc) + sizeof(struct ipr_mode_parm_hdr));
