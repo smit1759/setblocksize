@@ -657,6 +657,7 @@ command!\n");
    //  prepare header
 
    // printf("newSize: %d, ioctlBufferSize: %d\n", sizeof(struct ipr_block_desc) + sizeof(struct ipr_mode_parm_hdr), sizeof(ioctl_buffer));
+   print_buf(ioctl_buffer, sizeof(ioctl_buffer));
    rc = _sg_ioctl(sg_fd, cdb, ioctl_buffer, 12, SG_DXFER_TO_DEV, &sense_data, 30, 0);
    if (rc != 0)
    {
