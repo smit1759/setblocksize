@@ -621,21 +621,21 @@ command!\n");
    uint8_t ioctl_buffer[512];
    uint8_t cdb[IPR_CCB_CDB_LEN];
 
-   // mode_parm_hdr = (struct ipr_mode_parm_hdr *)ioctl_buffer;
+   mode_parm_hdr = (struct ipr_mode_parm_hdr *)ioctl_buffer;
 
    memset(ioctl_buffer, 0, 512);
 
    mode_parm_hdr->block_desc_len = sizeof(struct ipr_block_desc);
 
-   // block_desc = (struct ipr_block_desc *)(mode_parm_hdr + 1);
+   block_desc = (struct ipr_block_desc *)(mode_parm_hdr + 1);
 
    /* Setup block size */
    block_desc->block_length[0] = 0x00;
    block_desc->block_length[1] = bs >> 8;
    block_desc->block_length[2] = bs & 0xff;
-
-   memcpy(&ioctl_buffer, &mode_parm_hdr, sizeof(mode_parm_hdr));
-   memcpy(&ioctl_buffer + sizeof(mode_parm_hdr), &block_desc, sizeof(block_desc));
+   print_buf(ioctl_buffer, newSize);
+   // memcpy(&ioctl_buffer, &mode_parm_hdr, sizeof(mode_parm_hdr));
+   // memcpy(&ioctl_buffer + sizeof(mode_parm_hdr), &block_desc, sizeof(block_desc));
 
    memset(cdb, 0, IPR_CCB_CDB_LEN);
 
