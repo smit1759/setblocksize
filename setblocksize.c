@@ -666,7 +666,6 @@ command!\n");
    if (rc != 0)
    {
       scsi_cmd_err("dev", &sense_data, "Mode Select", rc);
-      printf("    Sense error: %s", );
       exit(1);
    }
    // copy to our buffer
