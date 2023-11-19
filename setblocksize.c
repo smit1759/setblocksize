@@ -643,7 +643,7 @@ command!\n");
    cdb[0] = MODE_SELECT;
    cdb[1] = 0x10; /* PF = 1, SP = 0 */
    cdb[4] = sizeof(struct ipr_block_desc) + sizeof(struct ipr_mode_parm_hdr);
-   printf("Send MODE SELECT command ...\n");
+   printf("\nSend MODE SELECT command ...\n");
    // if (write(sg_fd, sg_buffer, newSize) < 0)
    //{
    //    fprintf(stderr, "   Write error\n\n");
@@ -657,9 +657,10 @@ command!\n");
    //  prepare header
 
    // printf("newSize: %d, ioctlBufferSize: %d\n", sizeof(struct ipr_block_desc) + sizeof(struct ipr_mode_parm_hdr), sizeof(ioctl_buffer));
-   rc = _sg_ioctl(sg_fd, cdb, ioctl_buffer, 18, SG_DXFER_TO_DEV, &sense_data, 30, 0);
+   rc = _sg_ioctl(sg_fd, cdb, ioctl_buffer, 12, SG_DXFER_TO_DEV, &sense_data, 30, 0);
    if (rc != 0)
    {
+      print_buf(&sense_data, sizeof(sense_data));
       scsi_cmd_err("dev", &sense_data, "Mode Select", rc);
       close(sg_fd);
       exit(1);
